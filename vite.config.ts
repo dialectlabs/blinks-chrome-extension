@@ -17,6 +17,6 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    plugins: [crx({ manifest,  }), react()],
+    plugins: [crx({ manifest }), react()],
   };
 });

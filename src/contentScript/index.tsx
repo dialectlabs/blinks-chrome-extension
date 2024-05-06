@@ -1,4 +1,7 @@
 import { createRoot } from 'react-dom/client';
+import { Button } from './Button';
+
+import './content.css';
 
 const twitterReactRoot = document.getElementById('react-root')!;
 
@@ -20,37 +23,20 @@ const observer = new MutationObserver((mutations) => {
       }
 
       const tweetText = element.querySelector('[data-testid="tweetText"]');
-      console.log('tweetText', tweetText?.textContent);
-      tweetText?.parentElement?.appendChild(createButton());
+      tweetText?.parentElement?.appendChild(createAction());
     });
   });
 });
 
 observer.observe(twitterReactRoot, { childList: true, subtree: true });
 
-function createButton() {
-  console.log('createButton');
-  const buttonContainer = document.createElement('div');
+function createAction() {
+  const container = document.createElement('div');
+  container.className = 'dialect-action-root-container';
 
-  const buttonRoot = createRoot(buttonContainer);
+  const buttonRoot = createRoot(container);
 
-  buttonRoot.render(
-    <>
-      <button
-        onClick={async () => {
-          const res = await chrome.runtime.sendMessage({ type: 'connect' });
-          console.log('button on click', res);
-          const signedMsg = await chrome.runtime.sendMessage({
-            type: 'sign_message',
-            payload: { message: 'hello' },
-          });
-          console.log('signed message', signedMsg);
-        }}
-      >
-        TEST BUTTON FROM DIALECT
-      </button>
-    </>,
-  );
+  buttonRoot.render(<Button />);
 
-  return buttonContainer;
+  return container;
 }
