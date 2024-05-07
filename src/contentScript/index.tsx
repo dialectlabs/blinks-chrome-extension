@@ -1,7 +1,6 @@
 import { createRoot } from 'react-dom/client';
-import { Button } from './Button';
-
 import './content.css';
+import { ActionContainer } from './ActionContainer';
 
 const twitterReactRoot = document.getElementById('react-root')!;
 
@@ -23,6 +22,9 @@ const observer = new MutationObserver((mutations) => {
       }
 
       const tweetText = element.querySelector('[data-testid="tweetText"]');
+      if (!tweetText?.textContent?.includes('dialect.to')) {
+        return;
+      }
       tweetText?.parentElement?.appendChild(createAction());
     });
   });
@@ -34,9 +36,9 @@ function createAction() {
   const container = document.createElement('div');
   container.className = 'dialect-action-root-container';
 
-  const buttonRoot = createRoot(container);
+  const actionRoot = createRoot(container);
 
-  buttonRoot.render(<Button />);
+  actionRoot.render(<ActionContainer />);
 
   return container;
 }
