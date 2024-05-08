@@ -5,18 +5,20 @@ import { CheckIcon } from './CheckIcon';
 
 export const ActionContainer = () => {
   return (
-    <div className="w-full rounded-2xl bg-neutral-800 overflow-hidden mt-3">
+    <div className="w-full rounded-2xl bg-twitter-neutral-80 overflow-hidden mt-3">
       <img
         className="w-full aspect-square object-cover"
         src="https://pbs.twimg.com/profile_images/1749869491834462208/IEVQauMR_400x400.jpg"
         alt={'action-image'}
       />
       <div className="p-5 flex flex-col">
-        <span className="text-sm text-neutral-500 mb-1.5">dialect.to</span>
-        <span className="text-md text-white font-semibold">
+        <span className="text-subtext text-twitter-neutral-50 mb-1.5">
+          dialect.to
+        </span>
+        <span className="text-text text-white font-semibold">
           Dialect Hello World
         </span>
-        <span className="text-sm text-neutral-200 mb-4">
+        <span className="text-subtext text-twitter-neutral-40 mb-4">
           Sign message to say hello to this world
         </span>
         <ActionButton />
@@ -38,7 +40,7 @@ const ActionButton = () => {
       );
     if (signedMessage)
       return (
-        <span className="flex flex-row items-center justify-center gap-2 text-green-500">
+        <span className="flex flex-row items-center justify-center gap-2 text-twitter-success">
           Message Signed
           <CheckIcon />
         </span>

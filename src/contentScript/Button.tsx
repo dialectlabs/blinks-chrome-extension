@@ -6,8 +6,8 @@ export const Button = ({
   children,
 }: { onClick: () => void; disabled?: boolean } & PropsWithChildren) => {
   const buttonStyle = disabled
-    ? 'bg-neutral-700 text-neutral-500'
-    : 'bg-sky-500 text-white';
+    ? 'bg-twitter-neutral-70 text-twitter-neutral-50'
+    : 'bg-twitter-accent text-white';
   return (
     <button
       className={
