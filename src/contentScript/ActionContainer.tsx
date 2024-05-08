@@ -1,7 +1,6 @@
 import { Button } from './Button';
 import { useState } from 'react';
-import { SpinnerDots } from './SpinnerDots';
-import { CheckIcon } from './CheckIcon';
+import { CheckIcon, SpinnerDots } from './icons';
 
 export const ActionContainer = () => {
   return (
