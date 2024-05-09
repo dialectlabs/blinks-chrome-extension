@@ -2,23 +2,25 @@ import { Button } from './Button';
 import { useState } from 'react';
 import { CheckIcon, SpinnerDots } from './icons';
 
-export const ActionContainer = () => {
+export const ActionContainer = ({ content }: { content: ActionContent }) => {
   return (
-    <div className="w-full rounded-2xl bg-twitter-neutral-80 overflow-hidden mt-3">
-      <img
-        className="w-full aspect-square object-cover"
-        src="https://pbs.twimg.com/profile_images/1749869491834462208/IEVQauMR_400x400.jpg"
-        alt={'action-image'}
-      />
+    <div className="w-full rounded-2xl bg-twitter-neutral-80 overflow-hidden mt-3 shadow-action border border-twitter-accent">
+      {content.imageUrl && (
+        <img
+          className="w-full aspect-square object-cover object-left"
+          src={content.imageUrl}
+          alt="action-image"
+        />
+      )}
       <div className="p-5 flex flex-col">
         <span className="text-subtext text-twitter-neutral-50 mb-1.5">
-          dialect.to
+          {content.website}
         </span>
         <span className="text-text text-white font-semibold">
-          Dialect Hello World
+          {content.title}
         </span>
         <span className="text-subtext text-twitter-neutral-40 mb-4">
-          Sign message to say hello to this world
+          {content.description}
         </span>
         <ActionButton />
       </div>
@@ -28,36 +30,50 @@ export const ActionContainer = () => {
 
 const ActionButton = () => {
   const [signedMessage, setSignedMessage] = useState();
+  const [isExecuting, setIsExecuting] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
 
   const ButtonContent = () => {
     if (isSigning)
       return (
         <span className="flex flex-row items-center justify-center gap-2">
-          Signing <SpinnerDots />
+          Waiting for Wallet <SpinnerDots />
+        </span>
+      );
+    if (isExecuting)
+      return (
+        <span className="flex flex-row items-center justify-center gap-2">
+          Donating <SpinnerDots />
         </span>
       );
     if (signedMessage)
       return (
         <span className="flex flex-row items-center justify-center gap-2 text-twitter-success">
-          Message Signed
+          Donated
           <CheckIcon />
         </span>
       );
 
-    return 'Sign Message';
+    return 'Thank Creator (50 Droplets)';
   };
   const signMessage = async () => {
-    const res = await chrome.runtime.sendMessage({ type: 'connect' });
-    console.log('button on click', res);
     setIsSigning(true);
-    const signedMsg = await chrome.runtime.sendMessage({
-      type: 'sign_message',
-      payload: { message: 'hello' },
-    });
-    setIsSigning(false);
-    setSignedMessage(signedMsg);
-    console.log('signed message', signedMsg);
+    try {
+      const res = await chrome.runtime.sendMessage({ type: 'connect' });
+      console.log('button on click', res);
+      const signedMsg = await chrome.runtime.sendMessage({
+        type: 'sign_message',
+        payload: { message: 'This is a demo flow' },
+      });
+      setSignedMessage(signedMsg);
+      console.log('signed message', signedMsg);
+      if (signedMsg) {
+        setIsExecuting(true);
+        setTimeout(() => setIsExecuting(false), 2500);
+      }
+    } finally {
+      setIsSigning(false);
+    }
   };
 
   return (

@@ -24,6 +24,10 @@ export default {
         text: ['1rem', '1.2rem'],
         subtext: ['0.867rem', '1.067rem'],
       },
+      boxShadow: {
+        action:
+          '0px 2px 8px 0px rgba(59, 176, 255, 0.22), 0px 1px 48px 0px rgba(29, 155, 240, 0.32)',
+      },
     },
   },
   plugins: [],

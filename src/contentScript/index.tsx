@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import './content.css';
 import { ActionContainer } from './ActionContainer';
+import { urls } from './data';
 
 const twitterReactRoot = document.getElementById('react-root')!;
 
@@ -22,23 +23,26 @@ const observer = new MutationObserver((mutations) => {
       }
 
       const tweetText = element.querySelector('[data-testid="tweetText"]');
-      if (!tweetText?.textContent?.includes('dialect.to')) {
+      const foundUrl = Object.keys(urls).find((url) =>
+        tweetText?.textContent?.includes(url),
+      );
+      if (!foundUrl) {
         return;
       }
-      tweetText?.parentElement?.appendChild(createAction());
+      tweetText?.parentElement?.appendChild(createAction(foundUrl));
     });
   });
 });
 
 observer.observe(twitterReactRoot, { childList: true, subtree: true });
 
-function createAction() {
+function createAction(url: string) {
   const container = document.createElement('div');
   container.className = 'dialect-action-root-container';
 
   const actionRoot = createRoot(container);
 
-  actionRoot.render(<ActionContainer />);
+  actionRoot.render(<ActionContainer content={urls[url]} />);
 
   return container;
 }
