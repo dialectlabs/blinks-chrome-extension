@@ -1,4 +1,5 @@
-import { Transaction } from '@solana/web3.js';
+import base58 from 'bs58';
+import { Buffer } from 'buffer';
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   console.log('on message', msg, sender);
@@ -54,17 +55,22 @@ async function handleWalletCommunication(
     return res[0].result;
   } else if (type === 'sign_transaction') {
     // @ts-ignore
-    console.log('signing transaction', payload.transaction);
+    console.log('signing transaction', payload.txData);
     const res = await chrome.scripting.executeScript({
       world: 'MAIN',
       target: { tabId: tabId },
-      func: async (transaction: Buffer) => {
+      func: async (transaction: string) => {
         // @ts-ignore
         const provider = window.phantom.solana;
         try {
-          const tran = Transaction.from(transaction);
+          const tran = transaction;
           console.log('transaction', tran);
-          const res = await provider.signAndSendTransaction(tran);
+          const res = await provider.request({
+            method: 'signAndSendTransaction',
+            params: {
+              message: tran,
+            },
+          });
           console.log('result', res);
           return res;
         } catch (e) {
@@ -72,7 +78,7 @@ async function handleWalletCommunication(
         }
       },
       // @ts-ignore
-      args: [payload.transaction],
+      args: [base58.encode(Buffer.from(payload.txData, 'base64'))],
     });
     return res[0].result;
   }

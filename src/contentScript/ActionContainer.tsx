@@ -1,13 +1,14 @@
-import { Button } from './Button';
-import { useState } from 'react';
-import { CheckIcon, SpinnerDots } from './icons';
 import {
   Connection,
   PublicKey,
-  Transaction,
   TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction
 } from '@solana/web3.js';
 import { Buffer } from 'buffer';
+import { useState } from 'react';
+import { Button } from './Button';
+import { CheckIcon, SpinnerDots } from './icons';
 
 export const ActionContainer = ({ content }: { content: ActionContent }) => {
   return (
@@ -41,7 +42,7 @@ const ActionButton = () => {
   const [isSigning, setIsSigning] = useState(false);
 
   const connection = new Connection(
-    'https://dialect.devnet.rpcpool.com/ee21d5f582c150119dd6475765b3',
+    'https://leone-bglol6-fast-mainnet.helius-rpc.com',
     'confirmed',
   );
   const ButtonContent = () => {
@@ -73,7 +74,7 @@ const ActionButton = () => {
       const res = await chrome.runtime.sendMessage({ type: 'connect' });
       console.log('button on click', res);
       const signedMsg = await chrome.runtime.sendMessage({
-        type: 'sign_messagea',
+        type: 'sign_message',
         payload: { message: 'This is a demo flow' },
       });
       setSignedMessage(signedMsg);
@@ -94,25 +95,30 @@ const ActionButton = () => {
       console.log('button on click', res);
 
       const blockhash = await connection.getLatestBlockhash('confirmed');
+      console.log('blockhash', blockhash);
       const publicKey = new PublicKey(res);
-      const transaction = new Transaction({
-        ...blockhash,
-        feePayer: publicKey,
-      }).add(
-        new TransactionInstruction({
-          keys: [{ pubkey: publicKey, isSigner: true, isWritable: true }],
-          data: Buffer.from('Memo transaction test', 'utf-8'),
-          programId: new PublicKey(
-            'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
-          ),
-        }),
-      );
+      const msg = new TransactionMessage({
+        payerKey: publicKey,
+        recentBlockhash: blockhash.blockhash,
+        instructions: [
+          new TransactionInstruction({
+            keys: [{ pubkey: publicKey, isSigner: true, isWritable: true }],
+            data: Buffer.from('Memo transaction test', 'utf-8'),
+            programId: new PublicKey(
+              'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
+            ),
+          }),
+        ],
+      });
 
-      const buffer = transaction.serializeMessage();
+      const serializedTx = new VersionedTransaction(
+        msg.compileToV0Message(),
+      ).serialize();
+      console.log('serialized', serializedTx);
       const result = await chrome.runtime.sendMessage({
         type: 'sign_transaction',
         payload: {
-          transaction: buffer,
+          txData: Buffer.from(serializedTx).toString('base64'),
         },
       });
       console.log('result', result);
