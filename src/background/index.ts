@@ -1,3 +1,5 @@
+import { Transaction } from '@solana/web3.js';
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   console.log('on message', msg, sender);
 
@@ -48,6 +50,29 @@ async function handleWalletCommunication(
       },
       // @ts-ignore
       args: [payload.message],
+    });
+    return res[0].result;
+  } else if (type === 'sign_transaction') {
+    // @ts-ignore
+    console.log('signing transaction', payload.transaction);
+    const res = await chrome.scripting.executeScript({
+      world: 'MAIN',
+      target: { tabId: tabId },
+      func: async (transaction: Buffer) => {
+        // @ts-ignore
+        const provider = window.phantom.solana;
+        try {
+          const tran = Transaction.from(transaction);
+          console.log('transaction', tran);
+          const res = await provider.signAndSendTransaction(tran);
+          console.log('result', res);
+          return res;
+        } catch (e) {
+          console.log('error', e);
+        }
+      },
+      // @ts-ignore
+      args: [payload.transaction],
     });
     return res[0].result;
   }

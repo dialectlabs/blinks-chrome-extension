@@ -23,6 +23,9 @@
     "zip": "npm run build && node src/zip.js"
   },
   "dependencies": {
+    "@solana/web3.js": "^1.91.8",
+    "bs58": "^5.0.0",
+    "buffer": "^6.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
