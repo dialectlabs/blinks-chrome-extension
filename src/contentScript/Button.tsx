@@ -11,7 +11,8 @@ export const Button = ({
   return (
     <button
       className={
-        'w-full text-text font-semibold rounded-full px-6 py-3 ' + buttonStyle
+        'w-full flex justify-center items-center text-text font-semibold rounded-full px-6 py-3 ' +
+        buttonStyle
       }
       disabled={disabled}
       onClick={onClick}
