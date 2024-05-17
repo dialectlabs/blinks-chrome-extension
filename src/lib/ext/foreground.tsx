@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import './content.css';
-import { ActionContainer } from './ActionContainer';
+import { ActionContainer } from '../shared/ui/ActionContainer';
 
 const TRIGGER_WORD = 'drip.haus/sujipop';
 

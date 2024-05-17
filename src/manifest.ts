@@ -20,13 +20,13 @@ export default defineManifest({
     default_icon: 'img/logo-48.png',
   },
   background: {
-    service_worker: 'src/background/index.ts',
+    service_worker: 'src/background.ts',
     type: 'module',
   },
   content_scripts: [
     {
       matches: ['https://twitter.com/*', 'https://x.com/*'],
-      js: ['src/contentScript/index.tsx'],
+      js: ['src/index.tsx'],
     },
   ],
   web_accessible_resources: [
