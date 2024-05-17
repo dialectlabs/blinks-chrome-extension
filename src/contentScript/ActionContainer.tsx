@@ -1,138 +1,128 @@
+import { useEffect, useState } from 'react';
+import { ActionLayout } from './ActionLayout';
 import {
-  Connection,
-  PublicKey,
-  TransactionInstruction,
-  TransactionMessage,
-  VersionedTransaction
-} from '@solana/web3.js';
-import { Buffer } from 'buffer';
-import { useState } from 'react';
-import { Button } from './Button';
-import { CheckIcon, SpinnerDots } from './icons';
+  BlinkButton,
+  BlinkGetResponse,
+  BlinkLayout,
+  BlinkPrepareTxActionResponse,
+  ExecuteTxClientSideAction,
+} from './api/dialectSpec';
 
-export const ActionContainer = ({ content }: { content: ActionContent }) => {
-  return (
-    <div className="w-full rounded-2xl bg-twitter-neutral-80 overflow-hidden mt-3 shadow-action border border-twitter-accent">
-      {content.imageUrl && (
-        <img
-          className="w-full aspect-square object-cover object-left"
-          src={content.imageUrl}
-          alt="action-image"
-        />
-      )}
-      <div className="p-5 flex flex-col">
-        <span className="text-subtext text-twitter-neutral-50 mb-1.5">
-          {content.website}
-        </span>
-        <span className="text-text text-white font-semibold">
-          {content.title}
-        </span>
-        <span className="text-subtext text-twitter-neutral-40 mb-4">
-          {content.description}
-        </span>
-        <ActionButton />
-      </div>
-    </div>
-  );
-};
+const ROOT_URL = 'https://blinks-poc.vercel.app';
 
-const ActionButton = () => {
-  const [signedMessage, setSignedMessage] = useState();
-  const [isExecuting, setIsExecuting] = useState(false);
-  const [isSigning, setIsSigning] = useState(false);
+export const ActionContainer = () => {
+  const [account, setAccount] = useState('');
+  useEffect(() => {
+    const connectWallet = async () => {
+      const data = await chrome.runtime.sendMessage({ type: 'connect' });
+      setAccount(data);
+    };
 
-  const connection = new Connection(
-    'https://leone-bglol6-fast-mainnet.helius-rpc.com',
-    'confirmed',
-  );
-  const ButtonContent = () => {
-    if (isSigning)
-      return (
-        <span className="flex flex-row items-center justify-center gap-2">
-          Waiting for Wallet <SpinnerDots />
-        </span>
-      );
-    if (isExecuting)
-      return (
-        <span className="flex flex-row items-center justify-center gap-2">
-          Donating <SpinnerDots />
-        </span>
-      );
-    if (signedMessage)
-      return (
-        <span className="flex flex-row items-center justify-center gap-2 text-twitter-success">
-          Donated
-          <CheckIcon />
-        </span>
-      );
+    connectWallet().catch(console.error);
+  }, []);
 
-    return 'Thank Creator (50 Droplets)';
-  };
-  const signMessage = async () => {
-    setIsSigning(true);
-    try {
-      const res = await chrome.runtime.sendMessage({ type: 'connect' });
-      console.log('button on click', res);
-      const signedMsg = await chrome.runtime.sendMessage({
-        type: 'sign_message',
-        payload: { message: 'This is a demo flow' },
-      });
-      setSignedMessage(signedMsg);
-      console.log('signed message', signedMsg);
-      if (signedMsg) {
-        setIsExecuting(true);
-        setTimeout(() => setIsExecuting(false), 2500);
-      }
-    } finally {
-      setIsSigning(false);
+  const BLINK_URL =
+    ROOT_URL +
+    '/api/blinks/donate?' +
+    new URLSearchParams({
+      account,
+      to: 'Gde9K4TuAKZFM1JvLkvvBmGuVY9E64tnJ34ckNbB7BEA',
+    });
+
+  const [blink, setBlink] = useState<BlinkLayout>();
+
+  async function getBlink(url: string) {
+    const blinkResponse = await fetch(url);
+    const blink = (await blinkResponse.json()) as BlinkGetResponse;
+    setBlink(blink.layout);
+  }
+
+  useEffect(() => {
+    if (account) {
+      getBlink(BLINK_URL).catch(console.error);
     }
+  }, [account]);
+
+  if (!blink) return null;
+
+  const patchLayout = (patch: Partial<BlinkLayout>) => {
+    setBlink({ ...blink, ...patch });
   };
 
-  const signTransaction = async () => {
-    setIsSigning(true);
+  async function executeTransaction(action: ExecuteTxClientSideAction) {
+    const onSuccessLayoutPatch = action.onTxSuccess.slice;
+    const onError = (error: string) => {
+      if (action.onTxError.action === 'get-blink') {
+        const url =
+          ROOT_URL +
+          action.onTxError.url +
+          '&' +
+          new URLSearchParams({
+            error,
+          });
+        getBlink(url);
+      }
+    };
     try {
-      const res = await chrome.runtime.sendMessage({ type: 'connect' });
-      console.log('button on click', res);
-
-      const blockhash = await connection.getLatestBlockhash('confirmed');
-      console.log('blockhash', blockhash);
-      const publicKey = new PublicKey(res);
-      const msg = new TransactionMessage({
-        payerKey: publicKey,
-        recentBlockhash: blockhash.blockhash,
-        instructions: [
-          new TransactionInstruction({
-            keys: [{ pubkey: publicKey, isSigner: true, isWritable: true }],
-            data: Buffer.from('Memo transaction test', 'utf-8'),
-            programId: new PublicKey(
-              'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
-            ),
-          }),
-        ],
-      });
-
-      const serializedTx = new VersionedTransaction(
-        msg.compileToV0Message(),
-      ).serialize();
-      console.log('serialized', serializedTx);
+      // Request transaction
+      const transactionResponse = await fetch(
+        action.prepareTx?.url ? ROOT_URL + action.prepareTx?.url : BLINK_URL,
+        {
+          method: 'POST',
+          body: JSON.stringify({ account }),
+        },
+      );
+      const tx =
+        (await transactionResponse.json()) as BlinkPrepareTxActionResponse;
+      // Update layout to show transaction signing
+      patchLayout(action.onTxExecuting.slice);
       const result = await chrome.runtime.sendMessage({
         type: 'sign_transaction',
         payload: {
-          txData: Buffer.from(serializedTx).toString('base64'),
+          txData: tx.transaction,
         },
       });
       console.log('result', result);
-    } finally {
-      setIsSigning(false);
+      //
+      if (!result || result.error) {
+        onError(result.error ?? 'Unknown error');
+      } else {
+        // TODO transaction confirmation
+        patchLayout(onSuccessLayoutPatch);
+      }
+    } catch (e) {
+      onError(e.message ?? 'Unknown error');
+    }
+  }
+
+  const onButtonClick = async (btn: BlinkButton) => {
+    if (btn.onClick?.action === 'execute-tx-client-side') {
+      await executeTransaction(btn.onClick);
+    } else if (btn.onClick?.action === 'get-blink') {
+      const url = ROOT_URL + btn.onClick.url;
+      getBlink(url);
+    } else {
+      console.log('Unknown button');
     }
   };
 
+  const asButtonProps = (it: BlinkButton) => ({
+    text: it.text,
+    loading: it.loading,
+    disabled: it.disabled,
+    variant: it.variant,
+    onClick: () => onButtonClick(it),
+  });
+
   return (
-    <Button
-      onClick={signTransaction}
-      disabled={isSigning || Boolean(signedMessage)}
-    >
-      <ButtonContent />
-    </Button>
+    <ActionLayout
+      title={blink.title}
+      description={blink.description}
+      image={blink.image}
+      error={blink.error}
+      buttonRows={blink.buttons?.map((row) =>
+        row.map((it) => asButtonProps(it)),
+      )}
+    />
   );
 };

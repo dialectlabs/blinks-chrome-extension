@@ -75,6 +75,7 @@ async function handleWalletCommunication(
           return res;
         } catch (e) {
           console.log('error', e);
+          return { error: e.message ?? 'Unknown error' };
         }
       },
       // @ts-ignore

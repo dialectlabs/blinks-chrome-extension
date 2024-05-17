@@ -1,7 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import './content.css';
 import { ActionContainer } from './ActionContainer';
-import { urls } from './data';
+
+const TRIGGER_WORD = 'drip.haus/sujipop';
 
 const twitterReactRoot = document.getElementById('react-root')!;
 
@@ -23,26 +24,23 @@ const observer = new MutationObserver((mutations) => {
       }
 
       const tweetText = element.querySelector('[data-testid="tweetText"]');
-      const foundUrl = Object.keys(urls).find((url) =>
-        tweetText?.textContent?.includes(url),
-      );
-      if (!foundUrl) {
+      if (!tweetText?.textContent?.includes(TRIGGER_WORD)) {
         return;
       }
-      tweetText?.parentElement?.appendChild(createAction(foundUrl));
+      tweetText?.parentElement?.appendChild(createAction());
     });
   });
 });
 
 observer.observe(twitterReactRoot, { childList: true, subtree: true });
 
-function createAction(url: string) {
+function createAction() {
   const container = document.createElement('div');
   container.className = 'dialect-action-root-container';
 
   const actionRoot = createRoot(container);
 
-  actionRoot.render(<ActionContainer content={urls[url]} />);
+  actionRoot.render(<ActionContainer />);
 
   return container;
 }
