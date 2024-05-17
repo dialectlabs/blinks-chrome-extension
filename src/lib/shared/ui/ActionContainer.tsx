@@ -6,7 +6,7 @@ import {
   BlinkLayout,
   BlinkPrepareTxActionResponse,
   ExecuteTxClientSideAction,
-} from './api/dialectSpec';
+} from '../api/dialectSpec';
 
 const ROOT_URL = 'https://blinks-poc.vercel.app';
 

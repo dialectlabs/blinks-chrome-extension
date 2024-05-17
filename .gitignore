@@ -18,6 +18,7 @@
 .env.production.local
 .history
 *.log
+.idea
 
 # secrets
 secrets.*.js
