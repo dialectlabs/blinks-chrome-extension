@@ -7,18 +7,60 @@ import {
   BlinkPrepareTxActionResponse,
   ExecuteTxClientSideAction,
 } from '../api/dialectSpec';
+import { Connection } from '@solana/web3.js';
 
 const ROOT_URL = 'https://blinks-poc.vercel.app';
+const RPC_URL = '';
+
+const confirmTransaction = (sig: string) => {
+  // todo: inject url
+  const connection = new Connection(RPC_URL, 'confirmed');
+  let retry = 0;
+  const RETRY_TIMEOUT = 1000;
+  const MAX_RETRIES = 5;
+
+  return new Promise(async (res, rej) => {
+    const latestBlockhash = await connection.getLatestBlockhash();
+
+    const confirm = async () => {
+      if (retry > MAX_RETRIES) {
+        rej(new Error('Unable to confirm transaction'));
+        return;
+      }
+      retry += 1;
+
+      try {
+        const result = await connection.confirmTransaction({
+          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          blockhash: latestBlockhash.blockhash,
+          signature: sig,
+        });
+
+        if (result.value.err) {
+          setTimeout(confirm, RETRY_TIMEOUT);
+          return;
+        }
+
+        res(result);
+      } catch (e) {
+        setTimeout(confirm, RETRY_TIMEOUT);
+        return;
+      }
+    };
+
+    confirm();
+  });
+};
 
 export const ActionContainer = () => {
   const [account, setAccount] = useState('');
-  useEffect(() => {
-    const connectWallet = async () => {
-      const data = await chrome.runtime.sendMessage({ type: 'connect' });
-      setAccount(data);
-    };
+  const [blink, setBlink] = useState<BlinkLayout>();
 
-    connectWallet().catch(console.error);
+  useEffect(() => {
+    chrome.runtime
+      .sendMessage({ type: 'connect' })
+      .then(setAccount)
+      .catch(console.error);
   }, []);
 
   const BLINK_URL =
@@ -28,8 +70,6 @@ export const ActionContainer = () => {
       account,
       to: 'Gde9K4TuAKZFM1JvLkvvBmGuVY9E64tnJ34ckNbB7BEA',
     });
-
-  const [blink, setBlink] = useState<BlinkLayout>();
 
   async function getBlink(url: string) {
     const blinkResponse = await fetch(url);
@@ -87,7 +127,7 @@ export const ActionContainer = () => {
       if (!result || result.error) {
         onError(result.error ?? 'Unknown error');
       } else {
-        // TODO transaction confirmation
+        await confirmTransaction(result.signature);
         patchLayout(onSuccessLayoutPatch);
       }
     } catch (e) {
