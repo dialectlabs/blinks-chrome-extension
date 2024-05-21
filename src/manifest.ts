@@ -26,7 +26,7 @@ export default defineManifest({
   content_scripts: [
     {
       matches: ['https://twitter.com/*', 'https://x.com/*'],
-      js: ['src/index.tsx'],
+      js: ['src/contentScript.ts'],
     },
   ],
   web_accessible_resources: [
