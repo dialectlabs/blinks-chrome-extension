@@ -45,8 +45,8 @@ export const ActionLayout = ({
         </span>
         {buttonRows?.map((row) => (
           <div className="flex items-center gap-2">
-            {row.map((it) => (
-              <ActionButton {...it} />
+            {row.map((it, index) => (
+              <ActionButton key={index} {...it} />
             ))}
           </div>
         ))}

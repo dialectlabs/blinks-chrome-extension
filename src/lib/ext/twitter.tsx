@@ -66,7 +66,7 @@ function createAction(apiUrl: string) {
 
   const actionRoot = createRoot(container);
 
-  actionRoot.render(<ActionContainer />);
+  actionRoot.render(<ActionContainer initialUrl={apiUrl} />);
 
   return container;
 }
