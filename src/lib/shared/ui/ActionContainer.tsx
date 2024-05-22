@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActionLayout } from './ActionLayout';
 import {
   BlinkButton,
@@ -52,36 +52,41 @@ const confirmTransaction = (sig: string) => {
   });
 };
 
-export const ActionContainer = () => {
-  const [account, setAccount] = useState('');
-  const [blink, setBlink] = useState<BlinkLayout>();
+const buildUrl = (
+  base: string,
+  path: string,
+  params?: Record<string, string>,
+) => {
+  const url = new URL(base + path);
+  url.search = new URLSearchParams(params).toString();
+  return url.toString();
+};
 
-  useEffect(() => {
-    chrome.runtime
-      .sendMessage({ type: 'connect' })
-      .then(setAccount)
-      .catch(console.error);
-  }, []);
-
-  const BLINK_URL =
-    ROOT_URL +
-    '/api/blinks/donate?' +
-    new URLSearchParams({
-      account,
-      to: 'Gde9K4TuAKZFM1JvLkvvBmGuVY9E64tnJ34ckNbB7BEA',
+const connect = async () => {
+  try {
+    return await chrome.runtime.sendMessage({
+      type: 'connect',
     });
+  } catch {
+    return null;
+  }
+};
+
+export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
+  const [blink, setBlink] = useState<BlinkLayout>();
+  const [currentUrl, setCurrentUrl] = useState(initialUrl);
+  const rootUrl = useMemo(() => new URL(initialUrl).origin, [initialUrl]);
 
   async function getBlink(url: string) {
     const blinkResponse = await fetch(url);
     const blink = (await blinkResponse.json()) as BlinkGetResponse;
+    setCurrentUrl(url);
     setBlink(blink.layout);
   }
 
   useEffect(() => {
-    if (account) {
-      getBlink(BLINK_URL).catch(console.error);
-    }
-  }, [account]);
+    getBlink(initialUrl).catch(console.error);
+  }, [initialUrl]);
 
   if (!blink) return null;
 
@@ -93,23 +98,25 @@ export const ActionContainer = () => {
     const onSuccessLayoutPatch = action.onTxSuccess.slice;
     const onError = (error: string) => {
       if (action.onTxError.action === 'get-blink') {
-        const url =
-          ROOT_URL +
-          action.onTxError.url +
-          '&' +
-          new URLSearchParams({
-            error,
-          });
-        getBlink(url);
+        getBlink(buildUrl(rootUrl, action.onTxError.url, { error }));
       }
     };
+
     try {
+      const connectedAccount = await connect();
+
+      if (!connectedAccount) {
+        return;
+      }
+
       // Request transaction
       const transactionResponse = await fetch(
-        action.prepareTx?.url ? ROOT_URL + action.prepareTx?.url : BLINK_URL,
+        action.prepareTx?.url
+          ? buildUrl(rootUrl, action.prepareTx.url)
+          : currentUrl,
         {
           method: 'POST',
-          body: JSON.stringify({ account }),
+          body: JSON.stringify({ account: connectedAccount }),
         },
       );
       const tx =
@@ -122,8 +129,7 @@ export const ActionContainer = () => {
           txData: tx.transaction,
         },
       });
-      console.log('result', result);
-      //
+
       if (!result || result.error) {
         onError(result.error ?? 'Unknown error');
       } else {
@@ -131,6 +137,7 @@ export const ActionContainer = () => {
         patchLayout(onSuccessLayoutPatch);
       }
     } catch (e) {
+      console.log(e);
       onError(e.message ?? 'Unknown error');
     }
   }
@@ -139,8 +146,7 @@ export const ActionContainer = () => {
     if (btn.onClick?.action === 'execute-tx-client-side') {
       await executeTransaction(btn.onClick);
     } else if (btn.onClick?.action === 'get-blink') {
-      const url = ROOT_URL + btn.onClick.url;
-      getBlink(url);
+      getBlink(buildUrl(rootUrl, btn.onClick.url));
     } else {
       console.log('Unknown button');
     }
