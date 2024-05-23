@@ -3,6 +3,7 @@ import { ActionLayout } from './ActionLayout';
 import {
   BlinkButton,
   BlinkGetResponse,
+  BlinkInput,
   BlinkLayout,
   BlinkPrepareTxActionResponse,
   ExecuteTxClientSideAction,
@@ -58,7 +59,13 @@ const buildUrl = (
   params?: Record<string, string>,
 ) => {
   const url = new URL(base + path);
-  url.search = new URLSearchParams(params).toString();
+
+  if (params) {
+    Object.entries(params).map(([key, value]) => {
+      url.searchParams.append(key, value);
+    });
+  }
+
   return url.toString();
 };
 
@@ -74,13 +81,12 @@ const connect = async () => {
 
 export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
   const [blink, setBlink] = useState<BlinkLayout>();
-  const [currentUrl, setCurrentUrl] = useState(initialUrl);
   const rootUrl = useMemo(() => new URL(initialUrl).origin, [initialUrl]);
 
   async function getBlink(url: string) {
+    console.log('get blink', url);
     const blinkResponse = await fetch(url);
     const blink = (await blinkResponse.json()) as BlinkGetResponse;
-    setCurrentUrl(url);
     setBlink(blink.layout);
   }
 
@@ -94,11 +100,20 @@ export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
     setBlink({ ...blink, ...patch });
   };
 
-  async function executeTransaction(action: ExecuteTxClientSideAction) {
+  async function executeTransaction(
+    action: ExecuteTxClientSideAction,
+    params?: Record<string, string>,
+  ) {
     const onSuccessLayoutPatch = action.onTxSuccess.slice;
     const onError = (error: string) => {
       if (action.onTxError.action === 'get-blink') {
         getBlink(buildUrl(rootUrl, action.onTxError.url, { error }));
+        return;
+      }
+
+      if (action.onTxError.action === 'mutate-layout') {
+        patchLayout(action.onTxError.slice);
+        return;
       }
     };
 
@@ -112,8 +127,8 @@ export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
       // Request transaction
       const transactionResponse = await fetch(
         action.prepareTx?.url
-          ? buildUrl(rootUrl, action.prepareTx.url)
-          : currentUrl,
+          ? buildUrl(rootUrl, action.prepareTx.url, params)
+          : buildUrl(initialUrl, '', params),
         {
           method: 'POST',
           body: JSON.stringify({ account: connectedAccount }),
@@ -122,7 +137,7 @@ export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
       const tx =
         (await transactionResponse.json()) as BlinkPrepareTxActionResponse;
       // Update layout to show transaction signing
-      patchLayout(action.onTxExecuting.slice);
+      patchLayout({ ...action.onTxExecuting.slice, error: null });
       const result = await chrome.runtime.sendMessage({
         type: 'sign_transaction',
         payload: {
@@ -134,17 +149,20 @@ export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
         onError(result.error ?? 'Unknown error');
       } else {
         await confirmTransaction(result.signature);
-        patchLayout(onSuccessLayoutPatch);
+        patchLayout({ ...onSuccessLayoutPatch, error: null });
       }
-    } catch (e) {
+    } catch (e: any) {
       console.log(e);
       onError(e.message ?? 'Unknown error');
     }
   }
 
-  const onButtonClick = async (btn: BlinkButton) => {
+  const onButtonClick = async (
+    btn: BlinkButton,
+    params?: Record<string, string>,
+  ) => {
     if (btn.onClick?.action === 'execute-tx-client-side') {
-      await executeTransaction(btn.onClick);
+      await executeTransaction(btn.onClick, params);
     } else if (btn.onClick?.action === 'get-blink') {
       getBlink(buildUrl(rootUrl, btn.onClick.url));
     } else {
@@ -157,8 +175,20 @@ export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
     loading: it.loading,
     disabled: it.disabled,
     variant: it.variant,
-    onClick: () => onButtonClick(it),
+    onClick: (params?: Record<string, string>) => onButtonClick(it, params),
   });
+
+  const asInputProps = (it?: BlinkInput | null) => {
+    if (!it) {
+      return;
+    }
+
+    return {
+      placeholder: it.hint,
+      name: it.name,
+      button: asButtonProps(it.button),
+    };
+  };
 
   return (
     <ActionLayout
@@ -169,6 +199,7 @@ export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
       buttonRows={blink.buttons?.map((row) =>
         row.map((it) => asButtonProps(it)),
       )}
+      input={asInputProps(blink.input)}
     />
   );
 };

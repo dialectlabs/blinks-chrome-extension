@@ -10,7 +10,15 @@ export interface BlinkLayout {
   description: string;
   image?: string;
   buttons?: BlinkButton[][];
+  input?: BlinkInput | null;
   error?: string | null; // blink server may decide to return error message
+}
+
+export interface BlinkInput {
+  hint?: string;
+  name: string;
+  // Do we need validation in MVP?
+  button: BlinkButton; // when button is clicked, input value is sent to the server, see BlinkPrepareTxActionParams.input
 }
 
 export interface BlinkButton {
