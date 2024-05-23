@@ -1,5 +1,6 @@
 import { Button } from './Button';
 import { CheckIcon, SpinnerDots } from './icons';
+import { useState } from 'react';
 
 interface LayoutProps {
   image?: string;
@@ -8,20 +9,28 @@ interface LayoutProps {
   title: string;
   description: string;
   buttonRows?: ButtonProps[][];
+  input?: InputProps;
 }
 interface ButtonProps {
   text: string | null;
   loading?: boolean;
   variant?: 'default' | 'success' | 'error';
   disabled?: boolean;
-  onClick: () => void;
+  onClick: (params?: Record<string, string>) => void;
 }
+interface InputProps {
+  placeholder?: string;
+  name: string;
+  button: ButtonProps;
+}
+
 export const ActionLayout = ({
   title,
   description,
   image,
   website,
   buttonRows,
+  input,
   error,
 }: LayoutProps) => {
   return (
@@ -43,18 +52,45 @@ export const ActionLayout = ({
         <span className="text-subtext text-twitter-neutral-40 mb-4">
           {description}
         </span>
-        {buttonRows?.map((row) => (
-          <div className="flex items-center gap-2">
+        {buttonRows?.map((row, index) => (
+          <div key={index} className="flex items-center gap-2">
             {row.map((it, index) => (
               <ActionButton key={index} {...it} />
             ))}
           </div>
         ))}
+        {input && (
+          <div className="mt-3">
+            <ActionInput {...input} />
+          </div>
+        )}
         {error && (
           <span className="flex justify-center text-subtext text-twitter-error mt-4">
             {error}
           </span>
         )}
+      </div>
+    </div>
+  );
+};
+
+const ActionInput = ({ placeholder, name, button }: InputProps) => {
+  const [value, onChange] = useState('');
+
+  return (
+    <div className="rounded-full flex items-center gap-2 border border-[#3D4144]">
+      <input
+        placeholder={placeholder || 'Type here...'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="bg-transparent ml-4 flex-1 outline-none"
+      />
+      <div className="my-2 mr-2">
+        <ActionButton
+          {...button}
+          onClick={() => button.onClick({ [name]: value })}
+          disabled={button.disabled || value === ''}
+        />
       </div>
     </div>
   );
@@ -85,7 +121,7 @@ const ActionButton = ({
   };
 
   return (
-    <Button onClick={onClick} disabled={disabled} variant={variant}>
+    <Button onClick={() => onClick()} disabled={disabled} variant={variant}>
       <ButtonContent />
     </Button>
   );
