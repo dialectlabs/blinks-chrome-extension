@@ -57,16 +57,20 @@ async function handleNewNode(node: Element) {
     return;
   }
 
-  rootElement.parentElement?.replaceChildren(createAction(actionApiUrl));
+  rootElement.parentElement?.replaceChildren(
+    createAction(actionUrl.toString(), actionApiUrl),
+  );
 }
 
-function createAction(apiUrl: string) {
+function createAction(originalUrl: string, apiUrl: string) {
   const container = document.createElement('div');
   container.className = 'dialect-action-root-container';
 
   const actionRoot = createRoot(container);
 
-  actionRoot.render(<ActionContainer initialUrl={apiUrl} />);
+  actionRoot.render(
+    <ActionContainer initialApiUrl={apiUrl} websiteUrl={originalUrl} />,
+  );
 
   return container;
 }
