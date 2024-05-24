@@ -44,11 +44,13 @@ export const ActionLayout = ({
       )}
       <div className="p-5 flex flex-col">
         {website && (
-          <span className="text-subtext text-twitter-neutral-50 mb-1.5">
+          <span className="text-subtext text-twitter-neutral-50 mb-1.5 truncate">
             {website}
           </span>
         )}
-        <span className="text-text text-white font-semibold">{title}</span>
+        <span className="text-text text-white font-semibold mb-0.5">
+          {title}
+        </span>
         <span className="text-subtext text-twitter-neutral-40 mb-4">
           {description}
         </span>
@@ -83,7 +85,7 @@ const ActionInput = ({ placeholder, name, button }: InputProps) => {
         placeholder={placeholder || 'Type here...'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-transparent ml-4 flex-1 outline-none"
+        className="bg-transparent ml-4 flex-1 outline-none placeholder:text-twitter-neutral-50"
       />
       <div className="my-2 mr-2">
         <ActionButton

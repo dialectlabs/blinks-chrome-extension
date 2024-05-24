@@ -79,9 +79,15 @@ const connect = async () => {
   }
 };
 
-export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
+export const ActionContainer = ({
+  initialApiUrl,
+  websiteUrl,
+}: {
+  initialApiUrl: string;
+  websiteUrl?: string;
+}) => {
   const [blink, setBlink] = useState<BlinkLayout>();
-  const rootUrl = useMemo(() => new URL(initialUrl).origin, [initialUrl]);
+  const rootUrl = useMemo(() => new URL(initialApiUrl).origin, [initialApiUrl]);
 
   async function getBlink(url: string) {
     console.log('get blink', url);
@@ -91,8 +97,8 @@ export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
   }
 
   useEffect(() => {
-    getBlink(initialUrl).catch(console.error);
-  }, [initialUrl]);
+    getBlink(initialApiUrl).catch(console.error);
+  }, [initialApiUrl]);
 
   if (!blink) return null;
 
@@ -128,7 +134,7 @@ export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
       const transactionResponse = await fetch(
         action.prepareTx?.url
           ? buildUrl(rootUrl, action.prepareTx.url, params)
-          : buildUrl(initialUrl, '', params),
+          : buildUrl(initialApiUrl, '', params),
         {
           method: 'POST',
           body: JSON.stringify({ account: connectedAccount }),
@@ -194,6 +200,7 @@ export const ActionContainer = ({ initialUrl }: { initialUrl: string }) => {
     <ActionLayout
       title={blink.title}
       description={blink.description}
+      website={websiteUrl}
       image={blink.image}
       error={blink.error}
       buttonRows={blink.buttons?.map((row) =>
