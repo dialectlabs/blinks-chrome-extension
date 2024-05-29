@@ -1,14 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ActionLayout } from './ActionLayout';
-import {
-  BlinkButton,
-  BlinkGetResponse,
-  BlinkInput,
-  BlinkLayout,
-  BlinkPrepareTxActionResponse,
-  ExecuteTxClientSideAction,
-} from '../api/dialectSpec';
+import { useEffect, useMemo, useReducer, useState } from 'react';
+import { ActionLayout, ButtonProps } from './ActionLayout';
 import { Connection } from '@solana/web3.js';
+import { Action, ActionComponent } from '../api/Action';
 
 const ROOT_URL = 'https://blinks-poc.vercel.app';
 const RPC_URL = '';
@@ -17,7 +10,7 @@ const confirmTransaction = (sig: string) => {
   // todo: inject url
   const connection = new Connection(RPC_URL, 'confirmed');
   let retry = 0;
-  const RETRY_TIMEOUT = 1000;
+  const RETRY_TIMEOUT = 5000;
   const MAX_RETRIES = 5;
 
   return new Promise(async (res, rej) => {
@@ -53,22 +46,6 @@ const confirmTransaction = (sig: string) => {
   });
 };
 
-const buildUrl = (
-  base: string,
-  path: string,
-  params?: Record<string, string>,
-) => {
-  const url = new URL(base + path);
-
-  if (params) {
-    Object.entries(params).map(([key, value]) => {
-      url.searchParams.append(key, value);
-    });
-  }
-
-  return url.toString();
-};
-
 const connect = async () => {
   try {
     return await chrome.runtime.sendMessage({
@@ -79,6 +56,85 @@ const connect = async () => {
   }
 };
 
+type ExecutionStatus = 'idle' | 'executing' | 'success' | 'error';
+
+interface ExecutionState {
+  status: ExecutionStatus;
+  executingAction?: ActionComponent | null;
+  errorMessage?: string | null;
+  successMessage?: string | null;
+}
+
+enum ExecutionType {
+  INITIATE = 'INITIATE',
+  FINISH = 'FINISH',
+  FAIL = 'FAIL',
+  RESET = 'RESET',
+}
+
+type ActionValue =
+  | {
+      type: ExecutionType.INITIATE;
+      executingAction: ActionComponent;
+      errorMessage?: string;
+    }
+  | {
+      type: ExecutionType.FINISH;
+      successMessage?: string | null;
+    }
+  | {
+      type: ExecutionType.FAIL;
+      errorMessage: string;
+    }
+  | {
+      type: ExecutionType.RESET;
+    };
+
+const executionReducer = (
+  state: ExecutionState,
+  action: ActionValue,
+): ExecutionState => {
+  switch (action.type) {
+    case ExecutionType.INITIATE:
+      return { status: 'executing', executingAction: action.executingAction };
+    case ExecutionType.FINISH:
+      return {
+        ...state,
+        status: 'success',
+        successMessage: action.successMessage,
+        errorMessage: null,
+      };
+    case ExecutionType.FAIL:
+      return {
+        ...state,
+        status: 'error',
+        errorMessage: action.errorMessage,
+        successMessage: null,
+      };
+    case ExecutionType.RESET:
+      return {
+        status: 'idle',
+      };
+  }
+};
+
+const buttonVariantMap: Record<
+  ExecutionStatus,
+  'default' | 'error' | 'success'
+> = {
+  idle: 'default',
+  executing: 'default',
+  success: 'success',
+  error: 'error',
+};
+
+const buttonLabelMap: Record<ExecutionStatus, string | null> = {
+  idle: null,
+  executing: 'Executing',
+  success: 'Completed',
+  error: 'Failed',
+};
+
 export const ActionContainer = ({
   initialApiUrl,
   websiteUrl,
@@ -86,127 +142,116 @@ export const ActionContainer = ({
   initialApiUrl: string;
   websiteUrl?: string;
 }) => {
-  const [blink, setBlink] = useState<BlinkLayout>();
-  const rootUrl = useMemo(() => new URL(initialApiUrl).origin, [initialApiUrl]);
-
-  async function getBlink(url: string) {
-    console.log('get blink', url);
-    const blinkResponse = await fetch(url);
-    const blink = (await blinkResponse.json()) as BlinkGetResponse;
-    setBlink(blink.layout);
-  }
+  const [executionState, dispatch] = useReducer(executionReducer, {
+    status: 'idle',
+  });
+  const [action, setAction] = useState<Action | null>(null);
 
   useEffect(() => {
-    getBlink(initialApiUrl).catch(console.error);
+    Action.fetch(initialApiUrl).then(setAction).catch(console.error);
   }, [initialApiUrl]);
 
-  if (!blink) return null;
+  const buttons = useMemo(
+    () =>
+      action?.actions
+        .filter((it) => !it.parameter)
+        .filter((it) =>
+          executionState.executingAction
+            ? executionState.executingAction === it
+            : true,
+        ) ?? [],
+    [action, executionState.executingAction],
+  );
+  const inputs = useMemo(
+    () =>
+      action?.actions
+        .filter((it) => it.parameter)
+        .filter((it) =>
+          executionState.executingAction
+            ? executionState.executingAction === it
+            : true,
+        ) ?? [],
+    [action, executionState.executingAction],
+  );
 
-  const patchLayout = (patch: Partial<BlinkLayout>) => {
-    setBlink({ ...blink, ...patch });
-  };
+  if (!action) {
+    return null;
+  }
 
-  async function executeTransaction(
-    action: ExecuteTxClientSideAction,
+  const execute = async (
+    component: ActionComponent,
     params?: Record<string, string>,
-  ) {
-    const onSuccessLayoutPatch = action.onTxSuccess.slice;
-    const onError = (error: string) => {
-      if (action.onTxError.action === 'get-blink') {
-        getBlink(buildUrl(rootUrl, action.onTxError.url, { error }));
-        return;
-      }
+  ) => {
+    if (component.parameter && params) {
+      component.setValue(params[component.parameter.name]);
+    }
 
-      if (action.onTxError.action === 'mutate-layout') {
-        patchLayout(action.onTxError.slice);
-        return;
-      }
-    };
+    dispatch({ type: ExecutionType.INITIATE, executingAction: component });
 
     try {
-      const connectedAccount = await connect();
-
-      if (!connectedAccount) {
+      const account = await connect();
+      if (!account) {
+        dispatch({ type: ExecutionType.RESET });
         return;
       }
 
-      // Request transaction
-      const transactionResponse = await fetch(
-        action.prepareTx?.url
-          ? buildUrl(rootUrl, action.prepareTx.url, params)
-          : buildUrl(initialApiUrl, '', params),
-        {
-          method: 'POST',
-          body: JSON.stringify({ account: connectedAccount }),
-        },
-      );
-      const tx =
-        (await transactionResponse.json()) as BlinkPrepareTxActionResponse;
-      // Update layout to show transaction signing
-      patchLayout({ ...action.onTxExecuting.slice, error: null });
-      const result = await chrome.runtime.sendMessage({
+      const tx = await component.post(account);
+      const signResult = await chrome.runtime.sendMessage({
         type: 'sign_transaction',
         payload: {
           txData: tx.transaction,
         },
       });
 
-      if (!result || result.error) {
-        onError(result.error ?? 'Unknown error');
+      if (!signResult || signResult.error) {
+        dispatch({ type: ExecutionType.RESET });
       } else {
-        await confirmTransaction(result.signature);
-        patchLayout({ ...onSuccessLayoutPatch, error: null });
+        await confirmTransaction(signResult.signature);
+        dispatch({
+          type: ExecutionType.FINISH,
+          successMessage: tx.message,
+        });
       }
-    } catch (e: any) {
-      console.log(e);
-      onError(e.message ?? 'Unknown error');
-    }
-  }
-
-  const onButtonClick = async (
-    btn: BlinkButton,
-    params?: Record<string, string>,
-  ) => {
-    if (btn.onClick?.action === 'execute-tx-client-side') {
-      await executeTransaction(btn.onClick, params);
-    } else if (btn.onClick?.action === 'get-blink') {
-      getBlink(buildUrl(rootUrl, btn.onClick.url));
-    } else {
-      console.log('Unknown button');
+    } catch (e) {
+      dispatch({
+        type: ExecutionType.FAIL,
+        errorMessage: (e as Error).message ?? 'Unknown error',
+      });
     }
   };
 
-  const asButtonProps = (it: BlinkButton) => ({
-    text: it.text,
-    loading: it.loading,
-    disabled: it.disabled,
-    variant: it.variant,
-    onClick: (params?: Record<string, string>) => onButtonClick(it, params),
+  const asButtonProps = (it: ActionComponent): ButtonProps => ({
+    text: buttonLabelMap[executionState.status] ?? it.label,
+    loading:
+      executionState.status === 'executing' &&
+      it === executionState.executingAction,
+    disabled: action.disabled || executionState.status !== 'idle',
+    variant: buttonVariantMap[executionState.status],
+    onClick: (params?: Record<string, string>) => execute(it, params),
   });
 
-  const asInputProps = (it?: BlinkInput | null) => {
-    if (!it) {
-      return;
-    }
-
+  const asInputProps = (it: ActionComponent) => {
     return {
-      placeholder: it.hint,
-      name: it.name,
-      button: asButtonProps(it.button),
+      // since we already filter this, we can safely assume that parameter is not null
+      placeholder: it.parameter!.label,
+      name: it.parameter!.name,
+      button: asButtonProps(it),
     };
   };
 
   return (
     <ActionLayout
-      title={blink.title}
-      description={blink.description}
+      title={action.title}
+      description={action.description}
       website={websiteUrl}
-      image={blink.image}
-      error={blink.error}
-      buttonRows={blink.buttons?.map((row) =>
-        row.map((it) => asButtonProps(it)),
-      )}
-      input={asInputProps(blink.input)}
+      image={action.icon}
+      error={
+        executionState.status !== 'success'
+          ? executionState.errorMessage ?? action.error
+          : null
+      }
+      buttons={buttons.map((component) => asButtonProps(component))}
+      inputs={inputs.map((component) => asInputProps(component))}
     />
   );
 };

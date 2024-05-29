@@ -12,14 +12,19 @@ export class Action {
     private readonly url: string,
     private readonly data: ActionsSpecGetResponse,
   ) {
-    // if no _links present, fallback to original solana pay spec
-    if (!data._links?.actions) {
+    // if no links present, fallback to original solana pay spec
+    if (!data.links?.actions) {
       this._actions = [new ActionComponent(data.label, url)];
       return;
     }
 
-    this._actions = data._links.actions.map((action) => {
-      return new ActionComponent(action.label, action.href, action.parameters);
+    const urlObj = new URL(url);
+    this._actions = data.links.actions.map((action) => {
+      return new ActionComponent(
+        action.label,
+        urlObj.origin + action.href,
+        action.parameters,
+      );
     });
   }
 
@@ -41,6 +46,10 @@ export class Action {
 
   public get actions() {
     return this._actions;
+  }
+
+  public get error() {
+    return this.data.error?.message ?? null;
   }
 
   public resetActions() {
@@ -99,7 +108,7 @@ export class ActionComponent {
     this.parameterValue = value;
   }
 
-  public async execute(account: string) {
+  public async post(account: string) {
     const response = await fetch(this.href, {
       method: 'POST',
       body: JSON.stringify({ account } as ActionsSpecPostRequestBody),
@@ -108,10 +117,10 @@ export class ActionComponent {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(
-        `Failed to execute action ${this.href}, reason: ${error}`,
+        `Failed to execute action ${this.href}, reason: ${error.message}`,
       );
     }
 
-    const txData = (await response.json()) as ActionsSpecPostResponse;
+    return (await response.json()) as ActionsSpecPostResponse;
   }
 }
