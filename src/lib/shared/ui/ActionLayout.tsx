@@ -8,17 +8,18 @@ interface LayoutProps {
   website?: string;
   title: string;
   description: string;
-  buttonRows?: ButtonProps[][];
-  input?: InputProps;
+  buttons?: ButtonProps[];
+  inputs?: InputProps[];
 }
-interface ButtonProps {
+export interface ButtonProps {
   text: string | null;
   loading?: boolean;
   variant?: 'default' | 'success' | 'error';
   disabled?: boolean;
   onClick: (params?: Record<string, string>) => void;
 }
-interface InputProps {
+
+export interface InputProps {
   placeholder?: string;
   name: string;
   button: ButtonProps;
@@ -29,8 +30,8 @@ export const ActionLayout = ({
   description,
   image,
   website,
-  buttonRows,
-  input,
+  buttons,
+  inputs,
   error,
 }: LayoutProps) => {
   return (
@@ -54,18 +55,18 @@ export const ActionLayout = ({
         <span className="text-subtext text-twitter-neutral-40 mb-4">
           {description}
         </span>
-        {buttonRows?.map((row, index) => (
-          <div key={index} className="flex items-center gap-2">
-            {row.map((it, index) => (
-              <ActionButton key={index} {...it} />
-            ))}
-          </div>
-        ))}
-        {input && (
-          <div className="mt-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          {buttons?.map((it, index) => (
+            <div key={index} className="flex-auto">
+              <ActionButton {...it} />
+            </div>
+          ))}
+        </div>
+        {inputs?.map((input) => (
+          <div className="mt-3" key={input.name}>
             <ActionInput {...input} />
           </div>
-        )}
+        ))}
         {error && (
           <span className="flex justify-center text-subtext text-twitter-error mt-4">
             {error}
