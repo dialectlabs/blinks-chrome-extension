@@ -30,7 +30,7 @@ async function handleWalletCommunication(
       target: { tabId: tabId },
       func: async () => {
         // @ts-ignore
-        const provider = window.phantom.solana;
+        const provider = window.solana;
         const res = await provider.connect();
         return res.publicKey.toString();
       },
@@ -44,7 +44,7 @@ async function handleWalletCommunication(
       target: { tabId: tabId },
       func: async (message: string) => {
         // @ts-ignore
-        const provider = window.phantom.solana;
+        const provider = window.solana;
         const textToSign = new TextEncoder().encode(message);
         const res = await provider.signMessage(textToSign);
         return res;
@@ -61,7 +61,7 @@ async function handleWalletCommunication(
       target: { tabId: tabId },
       func: async (transaction: string) => {
         // @ts-ignore
-        const provider = window.phantom.solana;
+        const provider = window.solana;
         try {
           const tran = transaction;
           console.log('transaction', tran);
