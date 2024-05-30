@@ -1,4 +1,5 @@
 import {
+  ActionError,
   ActionsSpecGetResponse,
   ActionsSpecPostRequestBody,
   ActionsSpecPostResponse,
@@ -116,9 +117,13 @@ export class ActionComponent {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(
+      console.error(
         `Failed to execute action ${this.href}, reason: ${error.message}`,
       );
+
+      throw {
+        message: error.message,
+      } as ActionError;
     }
 
     return (await response.json()) as ActionsSpecPostResponse;
