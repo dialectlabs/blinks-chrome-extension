@@ -5,6 +5,7 @@ import { useState } from 'react';
 interface LayoutProps {
   image?: string;
   error?: string | null;
+  success?: string | null;
   website?: string;
   title: string;
   description: string;
@@ -22,6 +23,7 @@ export interface ButtonProps {
 export interface InputProps {
   placeholder?: string;
   name: string;
+  disabled: boolean;
   button: ButtonProps;
 }
 
@@ -33,6 +35,7 @@ export const ActionLayout = ({
   buttons,
   inputs,
   error,
+  success,
 }: LayoutProps) => {
   return (
     <div className="w-full rounded-2xl bg-twitter-neutral-80 overflow-hidden mt-3 shadow-action border border-twitter-accent">
@@ -55,19 +58,24 @@ export const ActionLayout = ({
         <span className="text-subtext text-twitter-neutral-40 mb-4">
           {description}
         </span>
-        <div className="flex items-center gap-2 flex-wrap">
-          {buttons?.map((it, index) => (
-            <div key={index} className="flex-auto">
-              <ActionButton {...it} />
+        <div className="flex flex-col gap-3">
+          {buttons && buttons.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {buttons?.map((it, index) => (
+                <div key={index} className="flex-auto">
+                  <ActionButton {...it} />
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+          {inputs?.map((input) => <ActionInput key={input.name} {...input} />)}
         </div>
-        {inputs?.map((input) => (
-          <div className="mt-3" key={input.name}>
-            <ActionInput {...input} />
-          </div>
-        ))}
-        {error && (
+        {success && (
+          <span className="flex justify-center text-subtext text-twitter-success mt-4">
+            {success}
+          </span>
+        )}
+        {error && !success && (
           <span className="flex justify-center text-subtext text-twitter-error mt-4">
             {error}
           </span>
@@ -77,7 +85,7 @@ export const ActionLayout = ({
   );
 };
 
-const ActionInput = ({ placeholder, name, button }: InputProps) => {
+const ActionInput = ({ placeholder, name, button, disabled }: InputProps) => {
   const [value, onChange] = useState('');
 
   return (
@@ -85,8 +93,9 @@ const ActionInput = ({ placeholder, name, button }: InputProps) => {
       <input
         placeholder={placeholder || 'Type here...'}
         value={value}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-transparent ml-4 flex-1 outline-none placeholder:text-twitter-neutral-50"
+        className="bg-transparent ml-4 flex-1 outline-none placeholder:text-twitter-neutral-50 disabled:text-twitter-neutral-50"
       />
       <div className="my-2 mr-2">
         <ActionButton
