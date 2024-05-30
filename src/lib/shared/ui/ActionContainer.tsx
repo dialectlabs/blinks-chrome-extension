@@ -234,6 +234,7 @@ export const ActionContainer = ({
     return {
       // since we already filter this, we can safely assume that parameter is not null
       placeholder: it.parameter!.label,
+      disabled: action.disabled || executionState.status !== 'idle',
       name: it.parameter!.name,
       button: asButtonProps(it),
     };
@@ -250,6 +251,7 @@ export const ActionContainer = ({
           ? executionState.errorMessage ?? action.error
           : null
       }
+      success={executionState.successMessage}
       buttons={buttons.map((component) => asButtonProps(component))}
       inputs={inputs.map((component) => asInputProps(component))}
     />
