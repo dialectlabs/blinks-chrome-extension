@@ -15,6 +15,7 @@ export class ActionsURLMapper {
   }
 
   public mapUrl(url: string | URL): string | null {
+    const urlStr = url.toString();
     const urlObj = new URL(url); // Parse the input URL
     const path = urlObj.pathname; // Extract the path from the URL
     const queryParams = urlObj.search; // Extract the query parameters from the URL
@@ -33,9 +34,9 @@ export class ActionsURLMapper {
 
       // Determine if we should match against the full URL or just the path
       // Example: "https://example.com/special/*" should match against the full URL
-      const match = (action.pathPattern.startsWith('http') ? url : path).match(
-        fullPattern,
-      );
+      const match = (
+        action.pathPattern.startsWith('http') ? urlStr : path
+      ).match(fullPattern);
 
       if (match) {
         // Replace '*' in the apiPath with the captured groups from the match
