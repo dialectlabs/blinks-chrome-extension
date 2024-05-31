@@ -73,7 +73,7 @@ async function handleWalletCommunication(
           });
           console.log('result', res);
           return res;
-        } catch (e) {
+        } catch (e: any) {
           console.log('error', e);
           return { error: e.message ?? 'Unknown error' };
         }
