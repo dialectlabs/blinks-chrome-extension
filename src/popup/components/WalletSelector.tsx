@@ -1,9 +1,8 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode } from 'react';
 import PhantomLogo from '../assets/PhantomLogo';
 import SolflareLogo from '../assets/SolflareLogo';
 import BackpackLogo from '../assets/BackpackLogo';
 import ArrowFromSquareIcon from '../icons/ArrowFromSquareIcon';
-import CommentExclamationIcon from '../icons/CommentExclamationIcon';
 
 interface WalletProps {
   isSelected?: boolean;
@@ -41,13 +40,27 @@ const Wallet = ({
   );
 };
 
-export const WalletSelector = () => {
-  const [selectedWallet, setSelectedWallet] = useState<string>();
+export const WalletSelector = ({
+  selectedWallet,
+  setSelectedWallet,
+}: {
+  selectedWallet?: string;
+  setSelectedWallet: (w?: string) => void;
+}) => {
+  function selectWallet(wallet: string) {
+    setSelectedWallet(wallet);
+    chrome.storage.local.set({ selectedWallet: wallet });
+  }
+
+  function unselectWallet() {
+    setSelectedWallet(undefined);
+    chrome.storage.local.remove('selectedWallet');
+  }
 
   //TODO normal checkbox
   const getRightAdornment = (wallet: string) =>
     selectedWallet === wallet ? (
-      <button onClick={() => setSelectedWallet(undefined)}>
+      <button onClick={unselectWallet}>
         <svg
           width="20"
           height="19"
@@ -62,7 +75,7 @@ export const WalletSelector = () => {
         </svg>
       </button>
     ) : (
-      <button onClick={() => setSelectedWallet(wallet)}>
+      <button onClick={() => selectWallet(wallet)}>
         <svg
           width="18"
           height="20"
@@ -77,39 +90,27 @@ export const WalletSelector = () => {
         </svg>
       </button>
     );
+
   return (
-    <div className="flex flex-1 flex-col justify-between h-full">
-      <div className="flex flex-col gap-2 w-full">
-        <Wallet
-          isSelected={selectedWallet === 'phantom'}
-          title={'Phantom'}
-          icon={<PhantomLogo />}
-          rightAdornment={getRightAdornment('phantom')}
-        />
-        <Wallet
-          isSelected={selectedWallet === 'solflare'}
-          title={'Solflare'}
-          icon={<SolflareLogo />}
-          rightAdornment={getRightAdornment('solflare')}
-        />
-        <Wallet
-          title={'Backpack'}
-          subtitle={'Blinks are natively supported in Backpack'}
-          icon={<BackpackLogo />}
-          rightAdornment={<ArrowFromSquareIcon />}
-        />
-      </div>
-      {selectedWallet && (
-        <div className="bg-accent-brand/10 rounded-lg p-2 flex items-center gap-2">
-          <div className="flex-1">
-            <CommentExclamationIcon />
-          </div>
-          <span className="text-caption font-normal">
-            Be sure you haven’t enabled Blinks natively in another wallet, such
-            as Backpack, before selecting a wallet below.
-          </span>
-        </div>
-      )}
+    <div className="flex flex-col flex-1 gap-2 w-full">
+      <Wallet
+        isSelected={selectedWallet === 'phantom'}
+        title={'Phantom'}
+        icon={<PhantomLogo />}
+        rightAdornment={getRightAdornment('phantom')}
+      />
+      <Wallet
+        isSelected={selectedWallet === 'solflare'}
+        title={'Solflare'}
+        icon={<SolflareLogo />}
+        rightAdornment={getRightAdornment('solflare')}
+      />
+      <Wallet
+        title={'Backpack'}
+        subtitle={'Blinks are natively supported in Backpack'}
+        icon={<BackpackLogo />}
+        rightAdornment={<ArrowFromSquareIcon />}
+      />
     </div>
   );
 };
