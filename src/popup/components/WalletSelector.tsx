@@ -49,8 +49,8 @@ export const WalletSelector = ({
   selectedWallet,
   setSelectedWallet,
 }: {
-  selectedWallet?: string;
-  setSelectedWallet: (w?: string) => void;
+  selectedWallet?: string | null;
+  setSelectedWallet: (w: string | null) => void;
 }) => {
   function selectWallet(wallet: string) {
     setSelectedWallet(wallet);
@@ -58,7 +58,7 @@ export const WalletSelector = ({
   }
 
   function unselectWallet() {
-    setSelectedWallet(undefined);
+    setSelectedWallet(null);
     chrome.storage.local.remove('selectedWallet');
   }
 

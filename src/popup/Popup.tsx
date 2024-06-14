@@ -6,14 +6,20 @@ import CommentExclamationIcon from './icons/CommentExclamationIcon';
 
 export const Popup = () => {
   const [isLoading, setLoading] = useState(true);
-  const [selectedWallet, setSelectedWallet] = useState<string | undefined>();
+  const [storedWallet, setStoredWallet] = useState();
+  const [selectedWallet, setSelectedWallet] = useState<string | null>();
 
   useEffect(() => {
     chrome.storage.local.get(['selectedWallet'], (result) => {
-      result.selectedWallet && setSelectedWallet(result.selectedWallet);
-      setTimeout(() => setLoading(false), 1000);
+      const storedWallet = result.selectedWallet ?? null;
+      setSelectedWallet(storedWallet);
+      setStoredWallet(storedWallet);
+      //fake loader
+      setTimeout(() => setLoading(false), 500);
     });
   }, []);
+  const walletChanged =
+    storedWallet !== undefined && selectedWallet !== storedWallet;
 
   if (isLoading)
     return (
@@ -34,14 +40,25 @@ export const Popup = () => {
           selectedWallet={selectedWallet}
           setSelectedWallet={setSelectedWallet}
         />
+
         {selectedWallet && (
-          <div className="bg-accent-brand/10 rounded-lg p-2 flex items-center gap-2">
-            <div className="flex-1">
+          <div className="bg-accent-brand/10 rounded-lg p-2 flex items-center gap-2 w-full">
+            <div className="flex-0">
               <CommentExclamationIcon />
             </div>
-            <span className="text-caption font-normal">
+            <span className="text-caption font-normal text-start">
               Be sure you haven’t enabled Blinks natively in another wallet,
               such as Backpack, before selecting a wallet below.
+            </span>
+          </div>
+        )}
+        {walletChanged && (
+          <div className="bg-accent-brand/10 rounded-lg p-2 flex items-center gap-2 mt-2 w-full">
+            <div className="flex-0">
+              <CommentExclamationIcon />
+            </div>
+            <span className="text-caption font-normal text-start">
+              Refresh this page for changes to take effect.
             </span>
           </div>
         )}
