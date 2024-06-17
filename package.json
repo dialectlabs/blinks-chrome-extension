@@ -23,7 +23,7 @@
     "zip": "npm run build && node src/zip.js"
   },
   "dependencies": {
-    "@dialectlabs/actions-ui": "0.1.0-beta.6",
+    "@dialectlabs/actions-ui": "0.1.0-beta.9",
     "@solana/web3.js": "^1.91.8",
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",
