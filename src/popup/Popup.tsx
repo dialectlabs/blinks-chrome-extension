@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { WalletSelector } from './components/WalletSelector';
-import CommentExclamationIcon from './icons/CommentExclamationIcon';
+import CircleExclamationIcon from './icons/CircleExclamationIcon';
 
 export const Popup = () => {
   const [isLoading, setLoading] = useState(true);
@@ -24,7 +24,7 @@ export const Popup = () => {
         <p className="text-tertiary text-subtext mb-8 text-center font-normal">
           Choose a wallet you would like to enable Blinks for. What are Blinks?{' '}
           <button
-            className="underline text-primary"
+            className="underline text-primary hover:opacity-80"
             onClick={() =>
               chrome.tabs.create({
                 url: 'https://www.dialect.to/',
@@ -41,8 +41,8 @@ export const Popup = () => {
 
         {selectedWallet && (
           <div className="bg-accent-brand/10 rounded-lg p-2 flex items-center gap-2 w-full">
-            <div className="flex-0">
-              <CommentExclamationIcon />
+            <div className="flex-0 text-accent-brand">
+              <CircleExclamationIcon />
             </div>
             <span className="text-caption font-normal text-start">
               Blinks should only be enabled for one wallet at a time. Before

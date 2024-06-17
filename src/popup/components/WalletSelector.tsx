@@ -24,7 +24,9 @@ const WalletSelect = ({
   isSelected?: boolean;
   onChange?: (nextVal: boolean) => void;
 }) => {
-  const borderColor = isSelected ? 'border-accent-brand' : 'border-secondary';
+  const borderColor = isSelected
+    ? 'border-accent-brand'
+    : 'border-secondary hover:border-[#C4C6C8]';
   const onClick = () => {
     onChange?.(!isSelected);
   };
@@ -33,7 +35,7 @@ const WalletSelect = ({
       <input type="hidden" checked={isSelected} onChange={onClick} />
       <div
         className={
-          'border px-4 py-3 flex flex-row items-center gap-3 rounded-lg ' +
+          'border px-4 py-3 flex flex-row items-center gap-3 rounded-lg group ' +
           borderColor
         }
       >
@@ -61,7 +63,9 @@ const WalletLink = ({
   url: string;
 }) => (
   <button
-    className={'border px-4 py-3 flex flex-row items-center gap-3 rounded-lg'}
+    className={
+      'border px-4 py-3 flex flex-row items-center gap-3 rounded-lg hover:border-[#C4C6C8]'
+    }
     onClick={() =>
       chrome.tabs.create({
         url,
@@ -77,7 +81,7 @@ const WalletLink = ({
         </span>
       )}
     </div>
-    <ArrowFromSquareIcon />
+    <ArrowFromSquareIcon className="text-icon-secondary" />
   </button>
 );
 
