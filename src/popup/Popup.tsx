@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { WalletSelector } from './components/WalletSelector';
-import DialectSymbolLogo from './assets/DialectSymbolLogo';
 import CommentExclamationIcon from './icons/CommentExclamationIcon';
 
 export const Popup = () => {
@@ -14,19 +13,13 @@ export const Popup = () => {
       const storedWallet = result.selectedWallet ?? null;
       setSelectedWallet(storedWallet);
       setStoredWallet(storedWallet);
-      //fake loader
-      setTimeout(() => setLoading(false), 500);
+      setLoading(false);
     });
   }, []);
   const walletChanged =
     storedWallet !== undefined && selectedWallet !== storedWallet;
 
-  if (isLoading)
-    return (
-      <div className="h-full flex flex-1 flex-col justify-center items-center">
-        <DialectSymbolLogo />
-      </div>
-    );
+  if (isLoading) return null;
   return (
     <div className="h-full flex flex-1 flex-col items-center px-4 pb-4">
       <Header />
