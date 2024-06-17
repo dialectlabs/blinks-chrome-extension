@@ -5,6 +5,12 @@ export default {
   theme: {
     extend: {
       colors: {
+        accent: {
+          brand: '#09CBBF',
+          success: '#09CBBF',
+          error: '#F62D2D',
+          warning: '#FF9900',
+        },
         twitter: {
           neutral: {
             100: '#0f1419',
@@ -20,9 +26,28 @@ export default {
           error: '#ff6f6f',
         },
       },
+      textColor: {
+        primary: '#232324',
+        secondary: '#434445',
+        tertiary: '#737373',
+        quaternary: '#888989',
+        inverse: '#FFFFFF',
+        icon: {
+          primary: '#2A2A2B',
+          secondary: '#888989',
+          tertiary: '#B3B3B3',
+          inverse: '#FFFFFF',
+        },
+      },
+      borderColor: {
+        primary: '#DEE1E7',
+        secondary: '#EBEBEB',
+      },
       fontSize: {
-        text: ['1rem', '1.2rem'],
-        subtext: ['0.867rem', '1.067rem'],
+        highlight: ['1.5rem', '2rem'],
+        text: ['0.938rem', '1.125rem'],
+        subtext: ['0.813rem', '1rem'],
+        caption: ['0.688rem', '0.875rem'],
       },
       boxShadow: {
         action:
