@@ -9,7 +9,7 @@ export const Header = () => {
         className="absolute right-4 top-4 text-icon-secondary"
         onClick={() =>
           chrome.tabs.create({
-            url: 'https://dashboard.dialect.to/',
+            url: 'https://www.dialect.to/',
           })
         }
       >

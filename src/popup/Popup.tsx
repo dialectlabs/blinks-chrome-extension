@@ -5,19 +5,15 @@ import CommentExclamationIcon from './icons/CommentExclamationIcon';
 
 export const Popup = () => {
   const [isLoading, setLoading] = useState(true);
-  const [storedWallet, setStoredWallet] = useState();
   const [selectedWallet, setSelectedWallet] = useState<string | null>();
 
   useEffect(() => {
     chrome.storage.local.get(['selectedWallet'], (result) => {
       const storedWallet = result.selectedWallet ?? null;
       setSelectedWallet(storedWallet);
-      setStoredWallet(storedWallet);
       setLoading(false);
     });
   }, []);
-  const walletChanged =
-    storedWallet !== undefined && selectedWallet !== storedWallet;
 
   if (isLoading) return null;
   return (
@@ -31,7 +27,7 @@ export const Popup = () => {
             className="underline text-primary"
             onClick={() =>
               chrome.tabs.create({
-                url: 'https://dashboard.dialect.to/',
+                url: 'https://www.dialect.to/',
               })
             }
           >
@@ -49,18 +45,9 @@ export const Popup = () => {
               <CommentExclamationIcon />
             </div>
             <span className="text-caption font-normal text-start">
-              Be sure you haven’t enabled Blinks natively in another wallet,
-              such as Backpack, before selecting a wallet below.
-            </span>
-          </div>
-        )}
-        {walletChanged && (
-          <div className="bg-accent-brand/10 rounded-lg p-2 flex items-center gap-2 mt-2 w-full">
-            <div className="flex-0">
-              <CommentExclamationIcon />
-            </div>
-            <span className="text-caption font-normal text-start">
-              Refresh this page for changes to take effect.
+              Blinks should only be enabled for one wallet at a time. Before
+              enabling support here, be sure you haven’t enabled native Blinks
+              in any wallets.
             </span>
           </div>
         )}
