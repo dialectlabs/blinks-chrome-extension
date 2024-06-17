@@ -34,7 +34,16 @@ export const Popup = () => {
         <h1 className="text-highlight font-bold mb-2">Enable Blinks</h1>
         <p className="text-tertiary text-subtext mb-8 text-center font-normal">
           Choose a wallet you would like to enable Blinks for. What are Blinks?{' '}
-          <a className="underline text-primary">Learn More</a>
+          <button
+            className="underline text-primary"
+            onClick={() =>
+              chrome.tabs.create({
+                url: 'https://dashboard.dialect.to/',
+              })
+            }
+          >
+            Learn More
+          </button>
         </p>
         <WalletSelector
           selectedWallet={selectedWallet}

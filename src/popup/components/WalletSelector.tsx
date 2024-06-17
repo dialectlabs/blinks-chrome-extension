@@ -10,40 +10,76 @@ enum Wallets {
   Phantom = 'phantom',
 }
 interface WalletProps {
-  isSelected?: boolean;
   title: string;
   subtitle?: string;
   icon: ReactNode;
-  rightAdornment?: ReactNode;
 }
-const Wallet = ({
+const WalletSelect = ({
   title,
   subtitle,
   icon,
-  rightAdornment,
   isSelected,
-}: WalletProps) => {
+  onChange,
+}: WalletProps & {
+  isSelected?: boolean;
+  onChange?: (nextVal: boolean) => void;
+}) => {
   const borderColor = isSelected ? 'border-accent-brand' : 'border-secondary';
+  const onClick = () => {
+    onChange?.(!isSelected);
+  };
   return (
-    <div
-      className={
-        'border px-4 py-3 flex flex-row items-center gap-3 rounded-lg ' +
-        borderColor
-      }
-    >
-      {icon}
-      <div className="flex flex-col flex-1">
-        <span className="text-text font-medium">{title}</span>
-        {subtitle && (
-          <span className="text-caption font-medium text-quaternary">
-            {subtitle}
-          </span>
-        )}
+    <label className="cursor-pointer items-center w-full" onClick={onClick}>
+      <input type="hidden" checked={isSelected} onChange={onClick} />
+      <div
+        className={
+          'border px-4 py-3 flex flex-row items-center gap-3 rounded-lg ' +
+          borderColor
+        }
+      >
+        {icon}
+        <div className="flex flex-col flex-1">
+          <span className="text-text font-medium">{title}</span>
+          {subtitle && (
+            <span className="text-caption font-medium text-quaternary">
+              {subtitle}
+            </span>
+          )}
+        </div>
+        <Checkbox checked={isSelected} />
       </div>
-      {rightAdornment}
-    </div>
+    </label>
   );
 };
+
+const WalletLink = ({
+  title,
+  subtitle,
+  icon,
+  url,
+}: WalletProps & {
+  url: string;
+}) => (
+  <button
+    className={'border px-4 py-3 flex flex-row items-center gap-3 rounded-lg'}
+    onClick={() =>
+      chrome.tabs.create({
+        url,
+      })
+    }
+  >
+    {icon}
+    <div className="flex flex-col flex-1 items-start">
+      <span className="text-text font-medium">{title}</span>
+      {subtitle && (
+        <span className="text-caption font-medium text-quaternary">
+          {subtitle}
+        </span>
+      )}
+    </div>
+    <ArrowFromSquareIcon />
+  </button>
+);
 
 export const WalletSelector = ({
   selectedWallet,
@@ -66,47 +102,27 @@ export const WalletSelector = ({
   const isWalletPhantom = selectedWallet === Wallets.Phantom;
   return (
     <div className="flex flex-col flex-1 gap-2 w-full">
-      <Wallet
+      <WalletSelect
         isSelected={isWalletPhantom}
         title="Phantom"
         icon={<PhantomLogo />}
-        rightAdornment={
-          <Checkbox
-            checked={isWalletPhantom}
-            onChange={(isChecked: boolean) =>
-              isChecked ? selectWallet(Wallets.Phantom) : unselectWallet()
-            }
-          />
+        onChange={(isChecked: boolean) =>
+          isChecked ? selectWallet(Wallets.Phantom) : unselectWallet()
         }
       />
-      <Wallet
+      <WalletSelect
         isSelected={isWalletSolflare}
         title="Solflare"
         icon={<SolflareLogo />}
-        rightAdornment={
-          <Checkbox
-            checked={isWalletSolflare}
-            onChange={(isChecked: boolean) =>
-              isChecked ? selectWallet(Wallets.Solflare) : unselectWallet()
-            }
-          />
+        onChange={(isChecked: boolean) =>
+          isChecked ? selectWallet(Wallets.Solflare) : unselectWallet()
         }
       />
-      <Wallet
+      <WalletLink
         title="Backpack"
         subtitle="Blinks are natively supported in Backpack"
         icon={<BackpackLogo />}
-        rightAdornment={
-          <button
-            onClick={() =>
-              chrome.tabs.create({
-                url: 'https://chromewebstore.google.com/detail/backpack/aflkmfhebedbjioipglgcbcmnbpgliof',
-              })
-            }
-          >
-            <ArrowFromSquareIcon />
-          </button>
-        }
+        url="https://chromewebstore.google.com/detail/backpack/aflkmfhebedbjioipglgcbcmnbpgliof"
       />
     </div>
   );
