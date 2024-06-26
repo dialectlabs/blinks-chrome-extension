@@ -102,25 +102,21 @@ export const WalletSelector = ({
     chrome.storage.local.remove('selectedWallet');
   }
 
-  const isWalletSolflare = selectedWallet === Wallets.Solflare;
-  const isWalletPhantom = selectedWallet === Wallets.Phantom;
   return (
     <div className="flex flex-col flex-1 gap-2 w-full">
       <WalletSelect
-        isSelected={isWalletPhantom}
-        title="Phantom"
-        icon={<PhantomLogo />}
-        onChange={(isChecked: boolean) =>
-          isChecked ? selectWallet(Wallets.Phantom) : unselectWallet()
-        }
-      />
-      <WalletSelect
-        isSelected={isWalletSolflare}
+        isSelected={selectedWallet === Wallets.Solflare}
         title="Solflare"
         icon={<SolflareLogo />}
         onChange={(isChecked: boolean) =>
           isChecked ? selectWallet(Wallets.Solflare) : unselectWallet()
         }
+      />
+      <WalletLink
+        title="Phantom"
+        subtitle="Blinks are natively supported in Phantom"
+        icon={<PhantomLogo />}
+        url="https://chromewebstore.google.com/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa"
       />
       <WalletLink
         title="Backpack"
