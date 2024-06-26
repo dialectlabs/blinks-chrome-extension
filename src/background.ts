@@ -81,7 +81,7 @@ async function handleWalletCommunication(
           const res =
             wallet === 'solflare'
               ? // @ts-ignore
-                await window.soflare.request({
+                await window.solflare.request({
                   method: 'signAndSendTransaction',
                   params: {
                     transaction,
