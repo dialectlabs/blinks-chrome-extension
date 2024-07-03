@@ -1,6 +1,6 @@
-import '@dialectlabs/actions-ui/index.css';
-import { setupTwitterObserver } from '@dialectlabs/actions-ui/ext/twitter';
-import { ActionConfig } from '@dialectlabs/actions-ui';
+import '@dialectlabs/blinks/index.css';
+import { setupTwitterObserver } from '@dialectlabs/blinks/ext/twitter';
+import { ActionConfig } from '@dialectlabs/blinks';
 
 const adapter = (wallet: string) =>
   new ActionConfig('***REMOVED***', {
