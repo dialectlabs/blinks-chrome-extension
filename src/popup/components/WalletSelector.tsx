@@ -106,19 +106,20 @@ export const WalletSelector = ({
   return (
     <div className="flex flex-col flex-1 gap-2 w-full">
       <WalletSelect
+        isSelected={isWalletPhantom}
+        title="Phantom"
+        subtitle="Blinks are also natively supported in Phantom"
+        icon={<PhantomLogo />}
+        onChange={(isChecked: boolean) =>
+          isChecked ? selectWallet(Wallets.Phantom) : unselectWallet()
+        }
+      />
+      <WalletSelect
         isSelected={isWalletSolflare}
         title="Solflare"
         icon={<SolflareLogo />}
         onChange={(isChecked: boolean) =>
           isChecked ? selectWallet(Wallets.Solflare) : unselectWallet()
-        }
-      />
-      <WalletSelect
-        isSelected={isWalletPhantom}
-        title="Phantom"
-        icon={<PhantomLogo />}
-        onChange={(isChecked: boolean) =>
-          isChecked ? selectWallet(Wallets.Phantom) : unselectWallet()
         }
       />
       <WalletLink
