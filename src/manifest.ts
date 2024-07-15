@@ -25,7 +25,7 @@ export default defineManifest({
   },
   content_scripts: [
     {
-      matches: ['https://twitter.com/*', 'https://x.com/*'],
+      matches: ['https://twitter.com/*', 'https://x.com/*', 'https://pro.x.com/*'],
       js: ['src/contentScript.ts'],
     },
   ],
