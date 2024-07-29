@@ -3,7 +3,7 @@ import { setupTwitterObserver } from '@dialectlabs/blinks/ext/twitter';
 import { ActionConfig } from '@dialectlabs/blinks';
 
 const adapter = (wallet: string) =>
-  new ActionConfig('***REMOVED***', {
+  new ActionConfig(import.meta.env.VITE_RPC_URL, {
     signTransaction: (tx: string) =>
       chrome.runtime.sendMessage({
         type: 'sign_transaction',
