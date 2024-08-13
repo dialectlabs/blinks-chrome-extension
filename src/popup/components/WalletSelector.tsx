@@ -117,6 +117,7 @@ export const WalletSelector = ({
       <WalletSelect
         isSelected={isWalletSolflare}
         title="Solflare"
+        subtitle="Blinks are also natively supported in Solflare"
         icon={<SolflareLogo />}
         onChange={(isChecked: boolean) =>
           isChecked ? selectWallet(Wallets.Solflare) : unselectWallet()
