@@ -25,6 +25,8 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
       actionHost: new URL(context.action.url).host,
       actionUrl: context.action.url,
       triggeredUrl: triggeredUrlObj.origin + triggeredUrlObj.pathname, // omitting query params, since they may contain user entered data,
+      triggeredLabel: context.triggeredLinkedAction.label,
+      isForm: context.triggeredLinkedAction.parameters.length > 1,
       securityState: context.actionType,
       isChained: context.action.isChained,
       wallet: this.wallet,
@@ -57,6 +59,8 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
       actionHost: new URL(context.action.url).host,
       actionUrl: context.action.url,
       triggeredUrl: triggeredUrlObj.origin + triggeredUrlObj.pathname, // omitting query params, since they may contain user entered data,
+      triggeredLabel: context.triggeredLinkedAction.label,
+      isForm: context.triggeredLinkedAction.parameters.length > 1,
       securityState: context.actionType,
       isChained: context.action.isChained,
       wallet: this.wallet,
@@ -115,20 +119,27 @@ function initTwitterObserver() {
   chrome.runtime.sendMessage({ type: 'getSelectedWallet' }, (wallet) => {
     if (wallet) {
       postHogClient?.capture('twitter_observer_init_success', { wallet });
-      setupTwitterObserver(adapter(wallet), {
-        onActionMount: async (action, originalUrl, type) => {
-          postHogClient?.capture('action_mount', {
-            actionHost: new URL(action.url).host,
-            actionUrl: action.url,
-            originalUrl,
-            securityState: type,
-            isChained: action.isChained,
-            isSupported: await action.isSupported(),
-            wallet,
-            client: 'extension',
-          });
+      setupTwitterObserver(
+        adapter(wallet),
+        {
+          onActionMount: async (action, originalUrl, type) => {
+            postHogClient?.capture('action_mount', {
+              actionHost: new URL(action.url).host,
+              actionUrl: action.url,
+              originalUrl,
+              securityState: type,
+              isChained: action.isChained,
+              isSupported: await action.isSupported(),
+              isLiveData: action.liveData_experimental?.enabled ?? false,
+              wallet,
+              client: 'extension',
+            });
+          },
         },
-      });
+        {
+          securityLevel: 'all',
+        },
+      );
     } else {
       postHogClient?.capture('twitter_observer_init_failed', {
         reason: 'no_wallet',
