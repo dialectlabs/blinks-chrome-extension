@@ -77,11 +77,27 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
   }
 
   async connect(context: ActionContext) {
+    const triggeredUrlObj = new URL(context.triggeredLinkedAction.href);
+    const analyticsParams = {
+      originalUrl: context.originalUrl,
+      actionHost: new URL(context.action.url).host,
+      actionUrl: context.action.url,
+      triggeredUrl: triggeredUrlObj.origin + triggeredUrlObj.pathname, // omitting query params, since they may contain user entered data,
+      triggeredLabel: context.triggeredLinkedAction.label,
+      isForm: context.triggeredLinkedAction.parameters.length > 1,
+      securityState: context.actionType,
+      isChained: context.action.isChained,
+      wallet: this.wallet,
+      client: 'extension',
+    };
+
     try {
       const address = await this.actionAdapter.connect(context);
       if (address) {
         postHogClient?.identify(address, { wallet: this.wallet });
+        postHogClient?.capture('action_connect_success', analyticsParams);
       } else {
+        postHogClient?.capture('action_connect_failed', analyticsParams);
         postHogClient?.reset();
       }
 
