@@ -92,6 +92,8 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
     };
 
     try {
+      postHogClient?.capture('action_connect_initiated', analyticsParams);
+
       const address = await this.actionAdapter.connect(context);
       if (address) {
         postHogClient?.identify(address, { wallet: this.wallet });
