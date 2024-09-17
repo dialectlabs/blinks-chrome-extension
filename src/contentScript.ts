@@ -119,27 +119,21 @@ function initTwitterObserver() {
   chrome.runtime.sendMessage({ type: 'getSelectedWallet' }, (wallet) => {
     if (wallet) {
       postHogClient?.capture('twitter_observer_init_success', { wallet });
-      setupTwitterObserver(
-        adapter(wallet),
-        {
-          onActionMount: async (action, originalUrl, type) => {
-            postHogClient?.capture('action_mount', {
-              actionHost: new URL(action.url).host,
-              actionUrl: action.url,
-              originalUrl,
-              securityState: type,
-              isChained: action.isChained,
-              isSupported: await action.isSupported(),
-              isLiveData: action.liveData_experimental?.enabled ?? false,
-              wallet,
-              client: 'extension',
-            });
-          },
+      setupTwitterObserver(adapter(wallet), {
+        onActionMount: async (action, originalUrl, type) => {
+          postHogClient?.capture('action_mount', {
+            actionHost: new URL(action.url).host,
+            actionUrl: action.url,
+            originalUrl,
+            securityState: type,
+            isChained: action.isChained,
+            isSupported: await action.isSupported(),
+            isLiveData: action.liveData_experimental?.enabled ?? false,
+            wallet,
+            client: 'extension',
+          });
         },
-        {
-          securityLevel: 'all',
-        },
-      );
+      });
     } else {
       postHogClient?.capture('twitter_observer_init_failed', {
         reason: 'no_wallet',
