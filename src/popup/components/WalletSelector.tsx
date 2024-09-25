@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import PhantomLogo from '../assets/PhantomLogo';
 import SolflareLogo from '../assets/SolflareLogo';
-import BackpackLogo from '../assets/BackpackLogo';
 import ArrowFromSquareIcon from '../icons/ArrowFromSquareIcon';
 import { Checkbox } from './Checkbox';
 
@@ -122,12 +121,6 @@ export const WalletSelector = ({
         onChange={(isChecked: boolean) =>
           isChecked ? selectWallet(Wallets.Solflare) : unselectWallet()
         }
-      />
-      <WalletLink
-        title="Backpack"
-        subtitle="Blinks are natively supported in Backpack"
-        icon={<BackpackLogo />}
-        url="https://chromewebstore.google.com/detail/backpack/aflkmfhebedbjioipglgcbcmnbpgliof"
       />
     </div>
   );

@@ -1,9 +1,9 @@
 {
   "name": "blink-twitter-inject",
-  "displayName": "Dialect Blinks",
+  "displayName": "ClickCrate",
   "version": "0.2.0",
   "author": "dialect",
-  "description": "Enable Solana Blinks on Twitter, with wallet support for Phantom, Backpack and Solflare.",
+  "description": "Enable Solana Blinks on socials, with google wallet support",
   "type": "module",
   "license": "MIT",
   "keywords": [
