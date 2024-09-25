@@ -6,7 +6,7 @@ export default {
     extend: {
       colors: {
         accent: {
-          brand: '#09CBBF',
+          brand: '#1F69FF',
           success: '#09CBBF',
           error: '#F62D2D',
           warning: '#FF9900',
@@ -27,16 +27,16 @@ export default {
         },
       },
       textColor: {
-        primary: '#232324',
+        primary: '#FFFFFF',
         secondary: '#434445',
         tertiary: '#737373',
         quaternary: '#888989',
-        inverse: '#FFFFFF',
+        inverse: '#000000',
         icon: {
-          primary: '#2A2A2B',
+          primary: '#FFFFFF',
           secondary: '#888989',
           tertiary: '#B3B3B3',
-          inverse: '#FFFFFF',
+          inverse: '#000000',
         },
       },
       borderColor: {

@@ -73,7 +73,7 @@ const WalletLink = ({
   >
     {icon}
     <div className="flex flex-col flex-1 items-start">
-      <span className="text-text font-medium">{title}</span>
+      <span className="text-primary text-text font-medium">{title}</span>
       {subtitle && (
         <span className="text-caption font-medium text-quaternary">
           {subtitle}

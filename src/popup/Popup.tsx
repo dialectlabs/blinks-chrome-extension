@@ -20,7 +20,9 @@ export const Popup = () => {
     <div className="h-full flex flex-1 flex-col items-center px-4 pb-4">
       <Header />
       <div className="flex flex-col mt-20 items-center h-full">
-        <h1 className="text-highlight font-bold mb-2">Enable Blinks</h1>
+        <h1 className="text-primary text-highlight font-bold mb-2">
+          Enable Blinks
+        </h1>
         <p className="text-tertiary text-subtext mb-8 text-center font-normal">
           Choose a wallet you would like to enable Blinks for. What are Blinks?{' '}
           <button
@@ -40,11 +42,11 @@ export const Popup = () => {
         />
 
         {selectedWallet && (
-          <div className="bg-accent-brand/10 rounded-lg p-2 flex items-center gap-2 w-full">
+          <div className="bg-primary-brand/10 rounded-lg p-2 flex items-center gap-2 w-full">
             <div className="flex-0 text-accent-brand">
               <CircleExclamationIcon />
             </div>
-            <span className="text-caption font-normal text-start">
+            <span className="text-primary text-caption font-normal text-start">
               Blinks should only be enabled for one wallet at a time. Before
               enabling support here, be sure you haven’t enabled native Blinks
               in any wallets.
