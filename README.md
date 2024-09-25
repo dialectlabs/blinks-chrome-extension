@@ -21,7 +21,7 @@ $ npm run dev
 ### Chrome Extension Developer Mode
 
 1. set your Chrome browser 'Developer mode' up
-2. click 'Load unpacked', and select `blinks-chrome-extension/build` folder
+2. click 'Load unpacked', and select `clickcrate-chrome-extension/build` folder
 
 ### Nomal FrontEnd Developer Mode
 
