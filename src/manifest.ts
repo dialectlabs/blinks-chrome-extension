@@ -1,7 +1,6 @@
 import { defineManifest } from '@crxjs/vite-plugin';
 import packageData from '../package.json';
 
-//@ts-ignore
 const isDev = process.env.NODE_ENV == 'development';
 
 export default defineManifest({
@@ -25,7 +24,11 @@ export default defineManifest({
   },
   content_scripts: [
     {
-      matches: ['https://twitter.com/*', 'https://x.com/*', 'https://pro.x.com/*'],
+      matches: [
+        'https://twitter.com/*',
+        'https://x.com/*',
+        'https://pro.x.com/*',
+      ],
       js: ['src/contentScript.ts'],
     },
   ],
@@ -36,8 +39,9 @@ export default defineManifest({
         'img/logo-32.png',
         'img/logo-48.png',
         'img/logo-128.png',
+        'provider.js',
       ],
-      matches: [],
+      matches: ['<all_urls>'],
     },
   ],
   permissions: ['storage', 'activeTab', 'scripting'],

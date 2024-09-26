@@ -42,7 +42,7 @@ export const Popup = () => {
         />
 
         {selectedWallet && (
-          <div className="bg-primary-brand/10 rounded-lg p-2 flex items-center gap-2 w-full">
+          <div className="bg-twitter-neutral-70 rounded-lg p-2 flex items-center gap-2 w-full">
             <div className="flex-0 text-accent-brand">
               <CircleExclamationIcon />
             </div>

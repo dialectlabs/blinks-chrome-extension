@@ -25,6 +25,9 @@ export default {
           success: '#00c466',
           error: '#ff6f6f',
         },
+        backgroundColor: {
+          'primary-10': 'rgba(255, 255, 255, 0.1)', // Assuming primary is white
+        },
       },
       textColor: {
         primary: '#FFFFFF',

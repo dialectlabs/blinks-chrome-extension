@@ -1,13 +1,17 @@
 import { ReactNode } from 'react';
 import PhantomLogo from '../assets/PhantomLogo';
 import SolflareLogo from '../assets/SolflareLogo';
+import TiplinkLogo from '../assets/TiplinkLogo';
+
 import ArrowFromSquareIcon from '../icons/ArrowFromSquareIcon';
 import { Checkbox } from './Checkbox';
 
 enum Wallets {
   Solflare = 'solflare',
   Phantom = 'phantom',
+  TipLink = 'tiplink',
 }
+
 interface WalletProps {
   title: string;
   subtitle?: string;
@@ -40,7 +44,7 @@ const WalletSelect = ({
       >
         {icon}
         <div className="flex flex-col flex-1">
-          <span className="text-text font-medium">{title}</span>
+          <span className="text-primary text-text font-medium">{title}</span>
           {subtitle && (
             <span className="text-caption font-medium text-quaternary">
               {subtitle}
@@ -100,8 +104,11 @@ export const WalletSelector = ({
     setSelectedWallet(null);
     chrome.storage.local.remove('selectedWallet');
   }
+
   const isWalletSolflare = selectedWallet === Wallets.Solflare;
   const isWalletPhantom = selectedWallet === Wallets.Phantom;
+  const isWalletTipLink = selectedWallet === Wallets.TipLink;
+
   return (
     <div className="flex flex-col flex-1 gap-2 w-full">
       <WalletSelect
@@ -120,6 +127,15 @@ export const WalletSelector = ({
         icon={<SolflareLogo />}
         onChange={(isChecked: boolean) =>
           isChecked ? selectWallet(Wallets.Solflare) : unselectWallet()
+        }
+      />
+      <WalletSelect
+        isSelected={isWalletTipLink}
+        title="TipLink"
+        subtitle="Use TipLink wallet for Blinks"
+        icon={<TiplinkLogo />}
+        onChange={(isChecked: boolean) =>
+          isChecked ? selectWallet(Wallets.TipLink) : unselectWallet()
         }
       />
     </div>

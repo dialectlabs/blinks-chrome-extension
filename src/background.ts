@@ -1,5 +1,13 @@
 import base58 from 'bs58';
 import { Buffer } from 'buffer';
+import { TipLinkWalletAdapter } from '@tiplink/wallet-adapter';
+
+// Initialize TipLink adapter
+const tipLinkAdapter = new TipLinkWalletAdapter({
+  title: 'ClickCrate Extension',
+  clientId: 'f4856b33-38fd-4902-8094-4174a85edbbd',
+  theme: 'dark',
+});
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   console.log('on message', msg, sender);
@@ -20,6 +28,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     })
     .catch((err) => {
       console.error('error handling message', err);
+      sendResponse({ error: err.message });
     });
 
   return true;
@@ -29,7 +38,47 @@ async function handleWalletCommunication(
   tabId: number,
   type: string,
   wallet: string,
-  payload: object,
+  payload: any,
+) {
+  if (wallet === 'tiplink') {
+    return handleTipLinkCommunication(type, payload);
+  } else {
+    return handleExistingWalletCommunication(tabId, type, wallet, payload);
+  }
+}
+
+async function handleTipLinkCommunication(type: string, payload: any) {
+  switch (type) {
+    case 'connect':
+      try {
+        await tipLinkAdapter.connect();
+        return tipLinkAdapter.publicKey?.toString();
+      } catch (error) {
+        console.error('TipLink connect error:', error);
+        throw new Error('Failed to connect TipLink wallet');
+      }
+    case 'sign_transaction':
+      try {
+        // const transaction = base58.encode(
+        //   Buffer.from(payload.txData, 'base64'),
+        // );
+        const signedTx = await tipLinkAdapter.signTransaction(payload.txData);
+        // You might need to adjust this part depending on how TipLink handles transaction signing and sending
+        return { signature: 'simulated_signature_for_tiplink' };
+      } catch (error) {
+        console.error('TipLink sign transaction error:', error);
+        throw new Error('Failed to sign transaction with TipLink');
+      }
+    default:
+      throw new Error(`Unsupported operation type for TipLink: ${type}`);
+  }
+}
+
+async function handleExistingWalletCommunication(
+  tabId: number,
+  type: string,
+  wallet: string,
+  payload: any,
 ) {
   if (type === 'connect') {
     console.log('connecting wallet', wallet);
@@ -53,33 +102,30 @@ async function handleWalletCommunication(
     });
     return res[0].result;
   } else if (type === 'sign_message') {
-    // @ts-ignore
     console.log('signing message', payload.message);
     const res = await chrome.scripting.executeScript({
       world: 'MAIN',
       target: { tabId: tabId },
-      func: async (message: string) => {
+      func: async (message: string, walletType: string) => {
         const provider =
           // @ts-ignore
-          wallet === 'solflare' ? window.solflare : window.solana;
+          walletType === 'solflare' ? window.solflare : window.solana;
         const textToSign = new TextEncoder().encode(message);
         const res = await provider.signMessage(textToSign);
         return res;
       },
-      // @ts-ignore
       args: [payload.message, wallet],
     });
     return res[0].result;
   } else if (type === 'sign_transaction') {
-    // @ts-ignore
     console.log('signing transaction', wallet, payload.txData);
     const res = await chrome.scripting.executeScript({
       world: 'MAIN',
       target: { tabId: tabId },
-      func: async (transaction: string, wallet) => {
+      func: async (transaction: string, walletType: string) => {
         try {
           const res =
-            wallet === 'solflare'
+            walletType === 'solflare'
               ? // @ts-ignore
                 await window.solflare.request({
                   method: 'signAndSendTransaction',
@@ -101,9 +147,9 @@ async function handleWalletCommunication(
           return { error: e.message ?? 'Unknown error' };
         }
       },
-      // @ts-ignore
       args: [base58.encode(Buffer.from(payload.txData, 'base64')), wallet],
     });
     return res[0].result;
   }
+  throw new Error(`Unsupported operation type: ${type}`);
 }

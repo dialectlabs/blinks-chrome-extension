@@ -8,6 +8,13 @@ import {
 } from '@dialectlabs/blinks';
 import postHogClient from './analytics';
 
+const script = document.createElement('script');
+script.src = chrome.runtime.getURL('provider.js');
+script.onload = () => {
+  script.remove();
+};
+(document.head || document.documentElement).appendChild(script);
+
 export class ActionConfigWithAnalytics implements ActionAdapter {
   constructor(
     private actionAdapter: ActionAdapter,
