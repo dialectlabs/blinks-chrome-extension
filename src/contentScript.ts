@@ -1,12 +1,15 @@
 import '@dialectlabs/blinks/index.css';
 import { setupTwitterObserver } from '@dialectlabs/blinks/ext/twitter';
 import {
+  Action,
   ActionAdapter,
   ActionConfig,
   ActionContext,
+  BlinkSecurityState,
   BlockchainIds,
 } from '@dialectlabs/blinks';
 import postHogClient from './analytics';
+import { setupRedditObserver } from './observers/reddit/redditObserver';
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('provider.js');
@@ -140,31 +143,96 @@ const adapter = (wallet: string) =>
     wallet,
   );
 
-function initTwitterObserver() {
+// function initTwitterObserver() {
+//   chrome.runtime.sendMessage({ type: 'getSelectedWallet' }, (wallet) => {
+//     if (wallet) {
+//       postHogClient?.capture('twitter_observer_init_success', { wallet });
+//       setupTwitterObserver(adapter(wallet), {
+//         onActionMount: async (action, originalUrl, type) => {
+//           postHogClient?.capture('action_mount', {
+//             actionHost: new URL(action.url).host,
+//             actionUrl: action.url,
+//             originalUrl,
+//             securityState: type,
+//             isChained: action.isChained,
+//             isSupported: await action.isSupported(),
+//             isLiveData: action.liveData_experimental?.enabled ?? false,
+//             wallet,
+//             client: 'extension',
+//           });
+//         },
+//       });
+//     } else {
+//       postHogClient?.capture('twitter_observer_init_failed', {
+//         reason: 'no_wallet',
+//       });
+//     }
+//   });
+// }
+
+// initTwitterObserver();
+
+function initObservers(wallet: string) {
+  const adapter = new ActionConfigWithAnalytics(
+    new ActionConfig(import.meta.env.VITE_RPC_URL, {
+      signTransaction: (tx: string) =>
+        chrome.runtime.sendMessage({
+          type: 'sign_transaction',
+          wallet,
+          payload: {
+            txData: tx,
+          },
+        }),
+      connect: () =>
+        chrome.runtime.sendMessage({
+          wallet,
+          type: 'connect',
+        }),
+      metadata: {
+        supportedBlockchainIds: [BlockchainIds.SOLANA_MAINNET],
+      },
+    }),
+    wallet,
+  );
+
+  const callbacks = {
+    onActionMount: async (
+      action: Action,
+      originalUrl: string,
+      type: BlinkSecurityState,
+    ) => {
+      postHogClient?.capture('action_mount', {
+        actionHost: new URL(action.url).host,
+        actionUrl: action.url,
+        originalUrl,
+        securityState: type,
+        isChained: action.isChained,
+        isSupported: await action.isSupported(),
+        isLiveData: action.liveData_experimental?.enabled ?? false,
+        wallet,
+        client: 'extension',
+      });
+    },
+  };
+
+  // Initialize Twitter observer
+  setupTwitterObserver(adapter, callbacks);
+
+  // Initialize Reddit observer
+  setupRedditObserver(adapter, callbacks);
+}
+
+function initExtension() {
   chrome.runtime.sendMessage({ type: 'getSelectedWallet' }, (wallet) => {
     if (wallet) {
-      postHogClient?.capture('twitter_observer_init_success', { wallet });
-      setupTwitterObserver(adapter(wallet), {
-        onActionMount: async (action, originalUrl, type) => {
-          postHogClient?.capture('action_mount', {
-            actionHost: new URL(action.url).host,
-            actionUrl: action.url,
-            originalUrl,
-            securityState: type,
-            isChained: action.isChained,
-            isSupported: await action.isSupported(),
-            isLiveData: action.liveData_experimental?.enabled ?? false,
-            wallet,
-            client: 'extension',
-          });
-        },
-      });
+      postHogClient?.capture('observer_init_success', { wallet });
+      initObservers(wallet);
     } else {
-      postHogClient?.capture('twitter_observer_init_failed', {
+      postHogClient?.capture('observer_init_failed', {
         reason: 'no_wallet',
       });
     }
   });
 }
 
-initTwitterObserver();
+initExtension();

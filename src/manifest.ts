@@ -28,6 +28,8 @@ export default defineManifest({
         'https://twitter.com/*',
         'https://x.com/*',
         'https://pro.x.com/*',
+        'https://www.reddit.com/*',
+        'https://old.reddit.com/*',
       ],
       js: ['src/contentScript.ts'],
     },
