@@ -10,6 +10,7 @@ import {
 } from '@dialectlabs/blinks';
 import postHogClient from './analytics';
 import { setupRedditObserver } from './observers/reddit/redditObserver';
+import { injectRedditStyles } from './observers/reddit/redditStyles';
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('provider.js');
@@ -216,10 +217,17 @@ function initObservers(wallet: string) {
   };
 
   // Initialize Twitter observer
-  setupTwitterObserver(adapter, callbacks);
+  // setupTwitterObserver(adapter, callbacks);
 
-  // Initialize Reddit observer
-  setupRedditObserver(adapter, callbacks);
+  if (window.location.hostname.includes('reddit.com')) {
+    injectRedditStyles();
+    setupRedditObserver(adapter, callbacks);
+  } else if (
+    window.location.hostname.includes('twitter.com') ||
+    window.location.hostname.includes('x.com')
+  ) {
+    setupTwitterObserver(adapter, callbacks);
+  }
 }
 
 function initExtension() {
@@ -227,6 +235,17 @@ function initExtension() {
     if (wallet) {
       postHogClient?.capture('observer_init_success', { wallet });
       initObservers(wallet);
+
+      // Add a listener for URL changes
+      let lastUrl = location.href;
+      new MutationObserver(() => {
+        const url = location.href;
+        if (url !== lastUrl) {
+          lastUrl = url;
+          window.lastProcessedURL = url; // Update this line
+          initObservers(wallet);
+        }
+      }).observe(document, { subtree: true, childList: true });
     } else {
       postHogClient?.capture('observer_init_failed', {
         reason: 'no_wallet',
@@ -236,3 +255,9 @@ function initExtension() {
 }
 
 initExtension();
+
+// Add this to handle page unload
+window.addEventListener('beforeunload', () => {
+  window.processedLinks = new Set();
+  delete window.lastProcessedURL;
+});

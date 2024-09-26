@@ -12,7 +12,7 @@ const tipLinkAdapter = new TipLinkWalletAdapter({
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   console.log('on message', msg, sender);
   if (!sender.tab || !sender.tab.id) {
-    return null;
+    return false;
   }
   if (msg.type === 'getSelectedWallet') {
     chrome.storage.local.get(['selectedWallet'], (storage) => {

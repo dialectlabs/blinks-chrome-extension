@@ -47,5 +47,11 @@ export default defineManifest({
     },
   ],
   permissions: ['storage', 'activeTab', 'scripting'],
-  host_permissions: ['https://twitter.com/*', 'https://x.com/*'],
+  host_permissions: [
+    'https://twitter.com/*',
+    'https://x.com/*',
+    'https://pro.x.com/*',
+    'https://www.reddit.com/*',
+    'https://old.reddit.com/*',
+  ],
 });

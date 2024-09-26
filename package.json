@@ -26,8 +26,10 @@
     "@dialectlabs/blinks": "^0.10.0",
     "@solana/web3.js": "^1.95.3",
     "@tiplink/wallet-adapter": "^2.1.21",
+    "@types/dompurify": "^3.0.5",
     "bs58": "^6.0.0",
     "buffer": "^6.0.3",
+    "dompurify": "^3.1.7",
     "posthog-js": "^1.161.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
