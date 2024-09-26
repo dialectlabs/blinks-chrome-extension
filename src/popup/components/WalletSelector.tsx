@@ -133,7 +133,7 @@ export const WalletSelector = ({
         isSelected={isWalletTipLink}
         title="TipLink"
         subtitle="Use TipLink wallet for Blinks"
-        icon={<TiplinkLogo />}
+        icon={<TiplinkLogo width={32} height={32} />}
         onChange={(isChecked: boolean) =>
           isChecked ? selectWallet(Wallets.TipLink) : unselectWallet()
         }
