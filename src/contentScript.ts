@@ -13,6 +13,8 @@ import { setupRedditObserver } from './observers/reddit/redditObserver';
 import { injectRedditStyles } from './observers/reddit/redditStyles';
 import { injectGmailStyles } from './observers/gmail/gmailStyles';
 import { setupGmailObserver } from './observers/gmail/gmailObserver';
+import { injectPinterestStyles } from './observers/pinterest/pinterestStyles';
+import { setupPinterestObserver } from './observers/pinterest/pinterestObserver';
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('provider.js');
@@ -229,6 +231,9 @@ function initObservers(wallet: string) {
   } else if (window.location.hostname.includes('mail.google.com')) {
     injectGmailStyles();
     setupGmailObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('pinterest.com')) {
+    injectPinterestStyles();
+    setupPinterestObserver(adapter, callbacks);
   }
 }
 
