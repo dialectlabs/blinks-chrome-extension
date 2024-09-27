@@ -17,7 +17,7 @@ import {
 } from '@dialectlabs/blinks-core';
 import { createRoot } from 'react-dom/client';
 import { Blink, type StylePreset } from '@dialectlabs/blinks';
-import { getRedditStylePreset } from './redditStyles';
+import { getGmailStylePreset } from './gmailStyles';
 import DOMPurify from 'dompurify';
 
 type ObserverSecurityLevel = SecurityLevel;
@@ -72,10 +72,11 @@ const normalizeOptions = (
   };
 };
 
-// // Declare global interface for TypeScript
+// Declare global interface for TypeScript
 // declare global {
 //   interface Window {
 //     processedLinks: Set<string>;
+//     lastProcessedURL?: string;
 //   }
 // }
 
@@ -84,26 +85,22 @@ if (typeof window.processedLinks === 'undefined') {
   window.processedLinks = new Set<string>();
 }
 
-export function setupRedditObserver(
+export function setupGmailObserver(
   config: ActionAdapter,
   callbacks: Partial<ActionCallbacksConfig> = {},
   options: Partial<ObserverOptions> = DEFAULT_OPTIONS,
 ) {
   const mergedOptions = normalizeOptions(options);
-  const redditRoot = document.querySelector('body')!;
+  const gmailRoot = document.querySelector('body')!;
 
   const refreshRegistry = async () => {
     return ActionsRegistry.getInstance().init();
   };
 
   const initObserver = () => {
-    // Clear processed links on each navigation
     window.processedLinks = new Set<string>();
+    handleExistingNodes(gmailRoot, config, callbacks, mergedOptions);
 
-    // Initial scan of existing content
-    handleExistingNodes(redditRoot, config, callbacks, mergedOptions);
-
-    // Set up observer for future changes
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
@@ -119,7 +116,7 @@ export function setupRedditObserver(
       }
     });
 
-    observer.observe(redditRoot, { childList: true, subtree: true });
+    observer.observe(gmailRoot, { childList: true, subtree: true });
 
     return observer;
   };
@@ -127,28 +124,20 @@ export function setupRedditObserver(
   refreshRegistry().then(() => {
     let observer = initObserver();
 
-    // Listen for URL changes
-    const urlObserver = new MutationObserver(() => {
-      const currentURL = window.location.href;
-      if (currentURL !== window.lastProcessedURL) {
-        window.lastProcessedURL = currentURL;
+    // Listen for URL changes (Gmail uses pushState)
+    let lastUrl = location.href;
+    new MutationObserver(() => {
+      const url = location.href;
+      if (url !== lastUrl) {
+        lastUrl = url;
+        window.lastProcessedURL = url;
         observer.disconnect();
         observer = initObserver();
       }
-    });
-
-    const titleElement = document.querySelector('head > title');
-    if (titleElement) {
-      urlObserver.observe(titleElement, {
-        subtree: true,
-        characterData: true,
-        childList: true,
-      });
-    } else {
-      console.warn('Title element not found for URL observation');
-    }
+    }).observe(document, { subtree: true, childList: true });
   });
 }
+
 function handleExistingNodes(
   root: Element,
   config: ActionAdapter,
@@ -175,7 +164,6 @@ async function handleNewNode(
     const url = new URL(link.getAttribute('href')!);
     const actionUrl = url.toString();
 
-    // Skip if this link has already been processed
     if (window.processedLinks.has(actionUrl)) continue;
     window.processedLinks.add(actionUrl);
 
@@ -265,14 +253,12 @@ function createAction({
 }) {
   const actionContainer = document.createElement('div');
   actionContainer.className = 'dialect-action-root-container';
-  // actionContainer.style.maxWidth = '500px';
-  // actionContainer.style.margin = '10px 0';
   container.appendChild(actionContainer);
 
   const actionRoot = createRoot(actionContainer);
 
   const isDarkMode = document.body.classList.contains('dark');
-  const stylePreset = getRedditStylePreset(isDarkMode);
+  const stylePreset = getGmailStylePreset(isDarkMode);
 
   const sanitizedUrl = DOMPurify.sanitize(originalUrl.toString());
   const sanitizedHostname = DOMPurify.sanitize(originalUrl.hostname);

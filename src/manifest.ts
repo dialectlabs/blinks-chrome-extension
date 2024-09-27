@@ -30,6 +30,7 @@ export default defineManifest({
         'https://pro.x.com/*',
         'https://www.reddit.com/*',
         'https://old.reddit.com/*',
+        'https://mail.google.com/*',
       ],
       js: ['src/contentScript.ts'],
     },
@@ -53,5 +54,6 @@ export default defineManifest({
     'https://pro.x.com/*',
     'https://www.reddit.com/*',
     'https://old.reddit.com/*',
+    'https://mail.google.com/*',
   ],
 });

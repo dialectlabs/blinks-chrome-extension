@@ -11,6 +11,8 @@ import {
 import postHogClient from './analytics';
 import { setupRedditObserver } from './observers/reddit/redditObserver';
 import { injectRedditStyles } from './observers/reddit/redditStyles';
+import { injectGmailStyles } from './observers/gmail/gmailStyles';
+import { setupGmailObserver } from './observers/gmail/gmailObserver';
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('provider.js');
@@ -216,9 +218,6 @@ function initObservers(wallet: string) {
     },
   };
 
-  // Initialize Twitter observer
-  // setupTwitterObserver(adapter, callbacks);
-
   if (window.location.hostname.includes('reddit.com')) {
     injectRedditStyles();
     setupRedditObserver(adapter, callbacks);
@@ -227,6 +226,9 @@ function initObservers(wallet: string) {
     window.location.hostname.includes('x.com')
   ) {
     setupTwitterObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('mail.google.com')) {
+    injectGmailStyles();
+    setupGmailObserver(adapter, callbacks);
   }
 }
 

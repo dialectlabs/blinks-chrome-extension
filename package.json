@@ -1,7 +1,7 @@
 {
   "name": "blink-twitter-inject",
   "displayName": "ClickCrate",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "dialect",
   "description": "Enable Solana Blinks on socials, with google wallet support",
   "type": "module",
