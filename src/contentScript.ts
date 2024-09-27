@@ -17,6 +17,18 @@ import { injectPinterestStyles } from './observers/pinterest/pinterestStyles';
 import { setupPinterestObserver } from './observers/pinterest/pinterestObserver';
 import { injectTelegramStyles } from './observers/telegram/telegramStyles';
 import { setupTelegramObserver } from './observers/telegram/telegramObserver';
+import { injectDiscordStyles } from './observers/discord/discordStyles';
+import { setupDiscordObserver } from './observers/discord/discordObserver';
+import { injectRumbleStyles } from './observers/rumble/rumbleStyles';
+import { setupRumbleObserver } from './observers/rumble/rumbleObserver';
+import { injectKickStyles } from './observers/kick/kickStyles';
+import { setupKickObserver } from './observers/kick/kickObserver';
+import { injectTikTokStyles } from './observers/tiktok/tiktokStyles';
+import { setupTikTokObserver } from './observers/tiktok/tiktokObserver';
+import { injectTwitchStyles } from './observers/twitch/twitchStyles';
+import { setupTwitchObserver } from './observers/twitch/twitchObserver';
+import { injectYoutubeStyles } from './observers/youtube/youtubeStyles';
+import { setupYoutubeObserver } from './observers/youtube/youtubeObserver';
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('provider.js');
@@ -222,26 +234,44 @@ function initObservers(wallet: string) {
     },
   };
 
-  if (window.location.hostname.includes('reddit.com')) {
-    injectRedditStyles();
-    setupRedditObserver(adapter, callbacks);
-  } else if (
+  if (
     window.location.hostname.includes('twitter.com') ||
     window.location.hostname.includes('x.com')
   ) {
     setupTwitterObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('discord.com')) {
+    injectDiscordStyles();
+    setupDiscordObserver(adapter, callbacks);
   } else if (window.location.hostname.includes('mail.google.com')) {
     injectGmailStyles();
     setupGmailObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('kick.com')) {
+    injectKickStyles();
+    setupKickObserver(adapter, callbacks);
   } else if (window.location.hostname.includes('pinterest.com')) {
     injectPinterestStyles();
     setupPinterestObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('reddit.com')) {
+    injectRedditStyles();
+    setupRedditObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('rumble.com')) {
+    injectRumbleStyles();
+    setupRumbleObserver(adapter, callbacks);
   } else if (
     window.location.hostname.includes('t.me') ||
     window.location.hostname.includes('telegram.org')
   ) {
     injectTelegramStyles();
     setupTelegramObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('tiktok.com')) {
+    injectTikTokStyles();
+    setupTikTokObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('twitch.com')) {
+    injectTwitchStyles();
+    setupTwitchObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('youtube.com')) {
+    injectYoutubeStyles();
+    setupYoutubeObserver(adapter, callbacks);
   }
 }
 

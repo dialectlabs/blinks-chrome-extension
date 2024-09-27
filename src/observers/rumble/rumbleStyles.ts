@@ -1,88 +1,89 @@
 import { StylePreset } from '@dialectlabs/blinks';
 
-// Function to get the appropriate StylePreset based on Rumble's dark mode
+// Function to get the appropriate StylePreset based on Rumble's theme
 export const getRumbleStylePreset = (isDarkMode: boolean): StylePreset => {
   return isDarkMode ? 'x-dark' : 'x-light';
 };
 
-// Add these custom styles to your CSS
+// Add these custom styles for Rumble
 const rumbleStyles = `
 .blink.x-light {
   --blink-bg-primary: #ffffff;
-  --blink-button: #ff0255;
-  --blink-button-disabled: #545452;
-  --blink-button-hover: #d6013f;
-  --blink-button-success: #5ad427;
-  --blink-icon-error: #ff0255;
-  --blink-icon-primary: #878a8c;
-  --blink-icon-warning: #ffa500;
-  --blink-input-bg: #ffffff;
-  --blink-input-stroke: #edeff1;
-  --blink-input-stroke-selected: #ff0255;
-  --blink-stroke-error: #ff0255;
-  --blink-stroke-primary: #ff0255;
-  --blink-stroke-secondary: #edeff1;
-  --blink-stroke-warning: #ffa500;
-  --blink-text-brand: #ff0255;
+  --blink-button: #85bd3c;
+  --blink-button-disabled: #cccccc;
+  --blink-button-hover: #74a535;
+  --blink-button-success: #85bd3c;
+  --blink-icon-error: #d9534f;
+  --blink-icon-primary: #333333;
+  --blink-icon-warning: #f0ad4e;
+  --blink-input-bg: #f8f8f8;
+  --blink-input-stroke: #cccccc;
+  --blink-input-stroke-selected: #85bd3c;
+  --blink-stroke-error: #d9534f;
+  --blink-stroke-primary: #85bd3c;
+  --blink-stroke-secondary: #e5e5e5;
+  --blink-stroke-warning: #f0ad4e;
+  --blink-text-brand: #85bd3c;
   --blink-text-button: #ffffff;
-  --blink-text-error: #ff0255;
-  --blink-text-input: #1c1c1c;
-  --blink-text-link: #737373;
-  --blink-text-primary: #1c1c1c;
-  --blink-text-secondary: #7c7c7c;
-  --blink-text-success: #ffffff;
-  --blink-text-warning: #ffa500;
+  --blink-text-error: #d9534f;
+  --blink-text-input: #333333;
+  --blink-text-link: #337ab7;
+  --blink-text-primary: #333333;
+  --blink-text-secondary: #777777;
+  --blink-text-success: #85bd3c;
+  --blink-text-warning: #f0ad4e;
 
-  --blink-border-radius-rounded-lg: 0.25rem;
-  --blink-border-radius-rounded-xl: 0.5rem;
-  --blink-border-radius-rounded-2xl: 1.125rem;
-  --blink-border-radius-rounded-button: 624.9375rem;
-  --blink-border-radius-rounded-input: 624.9375rem;
+  --blink-border-radius-rounded-lg: 4px;
+  --blink-border-radius-rounded-xl: 6px;
+  --blink-border-radius-rounded-2xl: 8px;
+  --blink-border-radius-rounded-button: 4px;
+  --blink-border-radius-rounded-input: 4px;
 
-  --blink-shadow-container: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  --blink-shadow-container: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .blink.x-dark {
-  --blink-bg-primary: #1a1a1b;
-  --blink-button: #ff0255;
-  --blink-button-disabled: #545452;
-  --blink-button-hover: #d6013f;
-  --blink-button-success: #46d160;
-  --blink-icon-error: #ff0255;
-  --blink-icon-primary: #818384;
-  --blink-icon-warning: #ffa500;
-  --blink-input-bg: #1a1a1b;
-  --blink-input-stroke: #343536;
-  --blink-input-stroke-selected: #ff0255;
-  --blink-stroke-error: #ff0255;
-  --blink-stroke-primary: #ff0255;
-  --blink-stroke-secondary: #343536;
-  --blink-stroke-warning: #ffa500;
-  --blink-text-brand: #ff0255;
-  --blink-text-button: #1a1a1b;
-  --blink-text-error: #ff0255;
-  --blink-text-input: #d7dadc;
-  --blink-text-link: #6e767d;
-  --blink-text-primary: #d7dadc;
-  --blink-text-secondary: #818384;
-  --blink-text-success: #ffffff;
-  --blink-text-warning: #ffa500;
+  --blink-bg-primary: #1a1a1a;
+  --blink-button: #85bd3c;
+  --blink-button-disabled: #4d4d4d;
+  --blink-button-hover: #74a535;
+  --blink-button-success: #85bd3c;
+  --blink-icon-error: #d9534f;
+  --blink-icon-primary: #ffffff;
+  --blink-icon-warning: #f0ad4e;
+  --blink-input-bg: #2a2a2a;
+  --blink-input-stroke: #4d4d4d;
+  --blink-input-stroke-selected: #85bd3c;
+  --blink-stroke-error: #d9534f;
+  --blink-stroke-primary: #85bd3c;
+  --blink-stroke-secondary: #4d4d4d;
+  --blink-stroke-warning: #f0ad4e;
+  --blink-text-brand: #85bd3c;
+  --blink-text-button: #ffffff;
+  --blink-text-error: #d9534f;
+  --blink-text-input: #ffffff;
+  --blink-text-link: #5bc0de;
+  --blink-text-primary: #ffffff;
+  --blink-text-secondary: #b3b3b3;
+  --blink-text-success: #85bd3c;
+  --blink-text-warning: #f0ad4e;
 
-  --blink-border-radius-rounded-lg: 0.25rem;
-  --blink-border-radius-rounded-xl: 0.5rem;
-  --blink-border-radius-rounded-2xl: 1.125rem;
-  --blink-border-radius-rounded-button: 624.9375rem;
-  --blink-border-radius-rounded-input: 624.9375rem;
+  --blink-border-radius-rounded-lg: 4px;
+  --blink-border-radius-rounded-xl: 6px;
+  --blink-border-radius-rounded-2xl: 8px;
+  --blink-border-radius-rounded-button: 4px;
+  --blink-border-radius-rounded-input: 4px;
 
-  --blink-shadow-container: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  --blink-shadow-container: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Additional styles to ensure consistent rendering */
 .dialect-action-root-container {
   max-width: 500px !important;
   margin: 10px 0 !important;
-  font-size: 1rem !important;
-  line-height: 1.4 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  font-family: Arial, sans-serif !important;
 }
 
 .blink {
@@ -91,7 +92,7 @@ const rumbleStyles = `
 }
 
 .blink-container {
-  padding: 1rem !important;
+  padding: 16px !important;
   border-radius: var(--blink-border-radius-rounded-lg) !important;
   background-color: var(--blink-bg-primary) !important;
   border: 1px solid var(--blink-stroke-secondary) !important;
@@ -99,19 +100,55 @@ const rumbleStyles = `
 }
 
 .blink-header, .blink-body, .blink-footer {
-  margin-bottom: 8px !important;
+  margin-bottom: 12px !important;
 }
 
 .blink-button {
-  padding: 1rem 2rem !important;
+  padding: 8px 16px !important;
+  height: 36px !important;
+  min-width: 80px !important;
   border-radius: var(--blink-border-radius-rounded-button) !important;
-  font-size: 1rem !important;
-  font-weight: bold !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   cursor: pointer !important;
   background-color: var(--blink-button) !important;
   color: var(--blink-text-button) !important;
   border: none !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.blink-button:hover {
+  background-color: var(--blink-button-hover) !important;
+}
+
+.blink-button:disabled {
+  background-color: var(--blink-button-disabled) !important;
+  cursor: not-allowed !important;
+}
+
+.blink-input {
+  background-color: var(--blink-input-bg) !important;
+  border: 1px solid var(--blink-input-stroke) !important;
+  border-radius: var(--blink-border-radius-rounded-input) !important;
+  color: var(--blink-text-input) !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.blink-input:focus {
+  border-color: var(--blink-input-stroke-selected) !important;
+  outline: none !important;
+}
+
+.blink-link {
+  color: var(--blink-text-link) !important;
+  text-decoration: none !important;
+}
+
+.blink-link:hover {
+  text-decoration: underline !important;
 }
 `;
 
