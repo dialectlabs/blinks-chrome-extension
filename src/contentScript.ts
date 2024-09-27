@@ -29,6 +29,12 @@ import { injectTwitchStyles } from './observers/twitch/twitchStyles';
 import { setupTwitchObserver } from './observers/twitch/twitchObserver';
 import { injectYoutubeStyles } from './observers/youtube/youtubeStyles';
 import { setupYoutubeObserver } from './observers/youtube/youtubeObserver';
+import { injectDocsStyles } from './observers/docs/docsStyles';
+import { setupDocsObserver } from './observers/docs/docsObserver';
+import { injectInstagramStyles } from './observers/instagram/instagramStyles';
+import { setupInstagramObserver } from './observers/instagram/instagramObserver';
+import { injectNotionStyles } from './observers/notion/notionStyles';
+import { setupNotionObserver } from './observers/notion/notionObserver';
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('provider.js');
@@ -272,6 +278,20 @@ function initObservers(wallet: string) {
   } else if (window.location.hostname.includes('youtube.com')) {
     injectYoutubeStyles();
     setupYoutubeObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('docs.google.com')) {
+    injectDocsStyles();
+    setupDocsObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('instagram.com')) {
+    injectInstagramStyles();
+    setupInstagramObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('notion.so')) {
+    injectNotionStyles();
+    setupNotionObserver(adapter, callbacks);
+  } else if (
+    window.location.hostname.includes('twitter.com') ||
+    window.location.hostname.includes('x.com')
+  ) {
+    setupTwitterObserver(adapter, callbacks);
   }
 }
 

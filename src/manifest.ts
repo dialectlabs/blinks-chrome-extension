@@ -40,6 +40,9 @@ export default defineManifest({
         'https://www.tiktok.com/*',
         'https://www.kick.com/*',
         'https://rumble.com/*',
+        'https://docs.google.com/*',
+        'https://www.instagram.com/*',
+        'https://www.notion.so/*',
       ],
       js: ['src/contentScript.ts'],
     },
@@ -73,5 +76,8 @@ export default defineManifest({
     'https://www.tiktok.com/*',
     'https://www.kick.com/*',
     'https://rumble.com/*',
+    'https://docs.google.com/*',
+    'https://www.instagram.com/*',
+    'https://www.notion.so/*',
   ],
 });
