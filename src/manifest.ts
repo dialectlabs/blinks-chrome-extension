@@ -32,6 +32,8 @@ export default defineManifest({
         'https://old.reddit.com/*',
         'https://mail.google.com/*',
         'https://www.pinterest.com/*',
+        'https://t.me/*',
+        'https://web.telegram.org/*',
       ],
       js: ['src/contentScript.ts'],
     },
@@ -57,5 +59,7 @@ export default defineManifest({
     'https://old.reddit.com/*',
     'https://mail.google.com/*',
     'https://www.pinterest.com/*',
+    'https://t.me/*',
+    'https://web.telegram.org/*',
   ],
 });

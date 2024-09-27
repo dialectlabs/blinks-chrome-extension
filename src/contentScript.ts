@@ -15,6 +15,8 @@ import { injectGmailStyles } from './observers/gmail/gmailStyles';
 import { setupGmailObserver } from './observers/gmail/gmailObserver';
 import { injectPinterestStyles } from './observers/pinterest/pinterestStyles';
 import { setupPinterestObserver } from './observers/pinterest/pinterestObserver';
+import { injectTelegramStyles } from './observers/telegram/telegramStyles';
+import { setupTelegramObserver } from './observers/telegram/telegramObserver';
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('provider.js');
@@ -234,6 +236,12 @@ function initObservers(wallet: string) {
   } else if (window.location.hostname.includes('pinterest.com')) {
     injectPinterestStyles();
     setupPinterestObserver(adapter, callbacks);
+  } else if (
+    window.location.hostname.includes('t.me') ||
+    window.location.hostname.includes('telegram.org')
+  ) {
+    injectTelegramStyles();
+    setupTelegramObserver(adapter, callbacks);
   }
 }
 
