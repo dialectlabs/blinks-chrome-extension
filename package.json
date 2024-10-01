@@ -1,7 +1,7 @@
 {
   "name": "blink-twitter-inject",
   "displayName": "Dialect Blinks",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": "dialect",
   "description": "Enable Solana Blinks on Twitter, with wallet support for Phantom, Backpack and Solflare.",
   "type": "module",
@@ -23,7 +23,7 @@
     "zip": "npm run build && node src/zip.js"
   },
   "dependencies": {
-    "@dialectlabs/blinks": "^0.11.0",
+    "@dialectlabs/blinks": "^0.12.1",
     "@solana/web3.js": "^1.95.3",
     "bs58": "^6.0.0",
     "buffer": "^6.0.3",
