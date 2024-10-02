@@ -5,8 +5,11 @@ import {
   ActionConfig,
   ActionContext,
   BlockchainIds,
+  createSignMessageText,
+  SignMessageData,
 } from '@dialectlabs/blinks';
 import postHogClient from './analytics';
+import base58 from 'bs58';
 
 export class ActionConfigWithAnalytics implements ActionAdapter {
   constructor(
@@ -44,7 +47,6 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
     } else {
       postHogClient?.capture('action_sign_failed', analyticsParams);
     }
-
     return result;
   }
 
@@ -74,6 +76,35 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
     } catch {
       postHogClient?.capture('action_confirm_failed', analyticsParams);
     }
+  }
+
+  async signMessage(data: string | SignMessageData, context: ActionContext) {
+    const triggeredUrlObj = new URL(context.triggeredLinkedAction.href);
+    const analyticsParams = {
+      originalUrl: context.originalUrl,
+      actionHost: new URL(context.action.url).host,
+      actionUrl: context.action.url,
+      triggeredUrl: triggeredUrlObj.origin + triggeredUrlObj.pathname,
+      triggeredLabel: context.triggeredLinkedAction.label,
+      isForm: context.triggeredLinkedAction.parameters.length > 1,
+      securityState: context.actionType,
+      isChained: context.action.isChained,
+      wallet: this.wallet,
+      client: 'extension',
+    };
+
+    postHogClient?.capture('action_sign_message_initiated', analyticsParams);
+    const result = await this.actionAdapter.signMessage(data, context);
+
+    if ('signature' in result) {
+      postHogClient?.capture('action_sign_message_success', {
+        ...analyticsParams,
+        signature: result.signature,
+      });
+    } else {
+      postHogClient?.capture('action_sign_message_failed', analyticsParams);
+    }
+    return result;
   }
 
   async connect(context: ActionContext) {
@@ -121,6 +152,31 @@ const adapter = (wallet: string) =>
             txData: tx,
           },
         }),
+      signMessage: async (data: string | SignMessageData) => {
+        const message =
+          typeof data === 'string' ? data : createSignMessageText(data);
+        const result: string | { error: string } =
+          await chrome.runtime.sendMessage({
+            type: 'sign_message',
+            wallet,
+            payload: {
+              message,
+            },
+          });
+        try {
+          if (typeof result !== 'string') {
+            return result;
+          }
+          const { signature } = JSON.parse(result) as { signature: number[] };
+          const encodedSignature = base58.encode(Uint8Array.from(signature));
+          return {
+            signature: encodedSignature,
+          };
+        } catch (e) {
+          console.error(e);
+          return { error: 'Signing failed.' };
+        }
+      },
       connect: () =>
         chrome.runtime.sendMessage({
           wallet,
