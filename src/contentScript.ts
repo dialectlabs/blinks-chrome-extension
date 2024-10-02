@@ -35,6 +35,8 @@ import { injectInstagramStyles } from './observers/instagram/instagramStyles';
 import { setupInstagramObserver } from './observers/instagram/instagramObserver';
 import { injectNotionStyles } from './observers/notion/notionStyles';
 import { setupNotionObserver } from './observers/notion/notionObserver';
+import { injectGithubStyles } from './observers/github/githubStyles';
+import { setupGithubObserver } from './observers/github/githubObserver';
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('provider.js');
@@ -287,11 +289,9 @@ function initObservers(wallet: string) {
   } else if (window.location.hostname.includes('notion.so')) {
     injectNotionStyles();
     setupNotionObserver(adapter, callbacks);
-  } else if (
-    window.location.hostname.includes('twitter.com') ||
-    window.location.hostname.includes('x.com')
-  ) {
-    setupTwitterObserver(adapter, callbacks);
+  } else if (window.location.hostname.includes('github.com')) {
+    injectGithubStyles();
+    setupGithubObserver(adapter, callbacks);
   }
 }
 
