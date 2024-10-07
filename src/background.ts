@@ -58,13 +58,18 @@ async function handleWalletCommunication(
     const res = await chrome.scripting.executeScript({
       world: 'MAIN',
       target: { tabId: tabId },
-      func: async (message: string) => {
-        const provider =
-          // @ts-ignore
-          wallet === 'solflare' ? window.solflare : window.solana;
-        const textToSign = new TextEncoder().encode(message);
-        const res = await provider.signMessage(textToSign);
-        return res;
+      func: async (message: string, wallet: string) => {
+        try {
+          const provider =
+            // @ts-ignore
+            wallet === 'solflare' ? window.solflare : window.solana;
+          const textToSign = new TextEncoder().encode(message);
+          const result = await provider.signMessage(textToSign, 'utf8');
+          return { signature: Array.from(result.signature) };
+        } catch (e: any) {
+          console.log('error', e);
+          return { error: e.message ?? 'Unknown error' };
+        }
       },
       // @ts-ignore
       args: [payload.message, wallet],
