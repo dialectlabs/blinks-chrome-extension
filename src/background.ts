@@ -64,7 +64,7 @@ async function handleWalletCommunication(
             // @ts-ignore
             wallet === 'solflare' ? window.solflare : window.solana;
           const textToSign = new TextEncoder().encode(message);
-          const result = await provider.signMessage(textToSign);
+          const result = await provider.signMessage(textToSign, 'utf8');
           return { signature: Array.from(result.signature) };
         } catch (e: any) {
           console.log('error', e);
