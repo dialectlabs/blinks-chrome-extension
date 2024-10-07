@@ -97,10 +97,7 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
     const result = await this.actionAdapter.signMessage(data, context);
 
     if ('signature' in result) {
-      postHogClient?.capture('action_sign_message_success', {
-        ...analyticsParams,
-        signature: result.signature,
-      });
+      postHogClient?.capture('action_sign_message_success', analyticsParams);
     } else {
       postHogClient?.capture('action_sign_message_failed', analyticsParams);
     }
