@@ -64,9 +64,8 @@ async function handleWalletCommunication(
             // @ts-ignore
             wallet === 'solflare' ? window.solflare : window.solana;
           const textToSign = new TextEncoder().encode(message);
-          const { signature }: { signature: Uint8Array } =
-            await provider.signMessage(textToSign);
-          return JSON.stringify({ signature: Array.from(signature) });
+          const result = await provider.signMessage(textToSign);
+          return { signature: Array.from(result.signature) };
         } catch (e: any) {
           console.log('error', e);
           return { error: e.message ?? 'Unknown error' };

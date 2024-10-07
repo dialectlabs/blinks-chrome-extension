@@ -155,7 +155,7 @@ const adapter = (wallet: string) =>
       signMessage: async (data: string | SignMessageData) => {
         const message =
           typeof data === 'string' ? data : createSignMessageText(data);
-        const result: string | { error: string } =
+        const result: { signature: number[] } | { error: string } =
           await chrome.runtime.sendMessage({
             type: 'sign_message',
             wallet,
@@ -163,12 +163,13 @@ const adapter = (wallet: string) =>
               message,
             },
           });
+        if (!('signature' in result)) {
+          return result;
+        }
         try {
-          if (typeof result !== 'string') {
-            return result;
-          }
-          const { signature } = JSON.parse(result) as { signature: number[] };
-          const encodedSignature = base58.encode(Uint8Array.from(signature));
+          const encodedSignature = base58.encode(
+            Uint8Array.from(result.signature),
+          );
           return {
             signature: encodedSignature,
           };
