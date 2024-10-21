@@ -25,7 +25,7 @@ export default defineManifest({
   },
   content_scripts: [
     {
-      matches: ['https://twitter.com/*', 'https://x.com/*', 'https://pro.x.com/*'],
+      matches: ['https://twitter.com/*', 'https://x.com/*', 'https://pro.x.com/*', 'https://youtube.com/*', "*://*.youtube.com/*", "https://*.warpcast.com/*"],
       js: ['src/contentScript.ts'],
     },
   ],
@@ -40,6 +40,6 @@ export default defineManifest({
       matches: [],
     },
   ],
-  permissions: ['storage', 'activeTab', 'scripting'],
-  host_permissions: ['https://twitter.com/*', 'https://x.com/*'],
+  permissions: ['storage', 'activeTab', 'scripting', "cookies"],
+  host_permissions: ['https://twitter.com/*', 'https://x.com/*', 'https://youtube.com/*', '*://*.youtube.com/*', "https://*.warpcast.com/*"],
 });

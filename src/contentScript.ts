@@ -1,24 +1,52 @@
 import '@dialectlabs/blinks/index.css';
-import { setupTwitterObserver } from '@dialectlabs/blinks/ext/twitter';
 import {
   ActionAdapter,
   ActionConfig,
   ActionContext,
   BlockchainIds,
-  createSignMessageText,
-  SignMessageData,
+  setupYouTubeObserver,
+  setupTwitterObserver,
+  ActionsRegistry,
 } from '@dialectlabs/blinks';
 import postHogClient from './analytics';
-import base58 from 'bs58';
 
 export class ActionConfigWithAnalytics implements ActionAdapter {
   constructor(
     private actionAdapter: ActionAdapter,
     private wallet: string,
-  ) {}
+  ) { }
 
   get metadata() {
     return this.actionAdapter.metadata;
+  }
+
+  // Implement the missing signMessage method
+  // @ts-ignore
+  async signMessage(message: string, context: ActionContext) {
+    const analyticsParams = {
+      originalUrl: context.originalUrl,
+      actionHost: new URL(context.action.url).host,
+      actionUrl: context.action.url,
+      triggeredLabel: context.triggeredLinkedAction.label,
+      isForm: context.triggeredLinkedAction.parameters.length > 1,
+      securityState: context.actionType,
+      wallet: this.wallet,
+      client: 'extension',
+    };
+
+    postHogClient?.capture('message_sign_initiated', analyticsParams);
+    const result = await this.actionAdapter.signMessage(message, context);
+
+    if ('signature' in result) {
+      postHogClient?.capture('message_sign_success', {
+        ...analyticsParams,
+        signature: result.signature,
+      });
+    } else {
+      postHogClient?.capture('message_sign_failed', analyticsParams);
+    }
+
+    return result;
   }
 
   async signTransaction(tx: string, context: ActionContext) {
@@ -78,32 +106,6 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
     }
   }
 
-  async signMessage(data: string | SignMessageData, context: ActionContext) {
-    const triggeredUrlObj = new URL(context.triggeredLinkedAction.href);
-    const analyticsParams = {
-      originalUrl: context.originalUrl,
-      actionHost: new URL(context.action.url).host,
-      actionUrl: context.action.url,
-      triggeredUrl: triggeredUrlObj.origin + triggeredUrlObj.pathname,
-      triggeredLabel: context.triggeredLinkedAction.label,
-      isForm: context.triggeredLinkedAction.parameters.length > 1,
-      securityState: context.actionType,
-      isChained: context.action.isChained,
-      wallet: this.wallet,
-      client: 'extension',
-    };
-
-    postHogClient?.capture('action_sign_message_initiated', analyticsParams);
-    const result = await this.actionAdapter.signMessage(data, context);
-
-    if ('signature' in result) {
-      postHogClient?.capture('action_sign_message_success', analyticsParams);
-    } else {
-      postHogClient?.capture('action_sign_message_failed', analyticsParams);
-    }
-    return result;
-  }
-
   async connect(context: ActionContext) {
     const triggeredUrlObj = new URL(context.triggeredLinkedAction.href);
     const analyticsParams = {
@@ -137,7 +139,7 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
     }
   }
 }
-
+// Update the adapter function to include signMessage
 const adapter = (wallet: string) =>
   new ActionConfigWithAnalytics(
     new ActionConfig(import.meta.env.VITE_RPC_URL, {
@@ -149,36 +151,20 @@ const adapter = (wallet: string) =>
             txData: tx,
           },
         }),
-      signMessage: async (data: string | SignMessageData) => {
-        const message =
-          typeof data === 'string' ? data : createSignMessageText(data);
-        const result: { signature: number[] } | { error: string } =
-          await chrome.runtime.sendMessage({
-            type: 'sign_message',
-            wallet,
-            payload: {
-              message,
-            },
-          });
-        if (!('signature' in result)) {
-          return result;
-        }
-        try {
-          const encodedSignature = base58.encode(
-            Uint8Array.from(result.signature),
-          );
-          return {
-            signature: encodedSignature,
-          };
-        } catch (e) {
-          console.error(e);
-          return { error: 'Signing failed.' };
-        }
-      },
       connect: () =>
         chrome.runtime.sendMessage({
           wallet,
           type: 'connect',
+        }),
+      // Implement signMessage function
+      // @ts-ignore
+      signMessage: (message: string) =>
+        chrome.runtime.sendMessage({
+          type: 'sign_message',
+          wallet,
+          payload: {
+            message,
+          },
         }),
       metadata: {
         supportedBlockchainIds: [BlockchainIds.SOLANA_MAINNET],
@@ -187,12 +173,29 @@ const adapter = (wallet: string) =>
     wallet,
   );
 
-function initTwitterObserver() {
-  chrome.runtime.sendMessage({ type: 'getSelectedWallet' }, (wallet) => {
-    if (wallet) {
-      postHogClient?.capture('twitter_observer_init_success', { wallet });
-      setupTwitterObserver(adapter(wallet), {
-        onActionMount: async (action, originalUrl, type) => {
+
+function initObservers() {
+  const hostname = window.location.hostname;
+  let observerType: 'twitter' | 'youtube' | null = null;
+
+  if (hostname.includes('twitter.com')) {
+    observerType = 'twitter';
+  } else if (hostname.includes('youtube.com')) {
+    observerType = 'youtube';
+  } 
+  if (!observerType) {
+    console.log('Not a supported site for Blinks');
+    return;
+  }
+
+  const initRegistry = ActionsRegistry.getInstance().init();
+  
+  const initObserver = async (wallet: string) => {
+    try {
+      await initRegistry;
+
+      const commonCallbacks = {
+        onActionMount: async ({ action, originalUrl, type }: any) => {
           postHogClient?.capture('action_mount', {
             actionHost: new URL(action.url).host,
             actionUrl: action.url,
@@ -205,13 +208,51 @@ function initTwitterObserver() {
             client: 'extension',
           });
         },
-      });
-    } else {
-      postHogClient?.capture('twitter_observer_init_failed', {
-        reason: 'no_wallet',
+      };
+
+      const adapterInstance = adapter(wallet);
+
+      switch (observerType) {
+        case 'twitter':
+          postHogClient?.capture('twitter_observer_init_success', { wallet });
+          // @ts-ignore
+          setupTwitterObserver(adapterInstance, commonCallbacks);
+          break;
+        case 'youtube':
+          postHogClient?.capture('youtube_observer_init_success', { wallet });
+          // @ts-ignore
+          setupYouTubeObserver(adapterInstance, commonCallbacks);
+          break;
+      }
+    } catch (error) {
+      console.error('Failed to initialize observer:', error);
+      postHogClient?.capture('observer_init_failed', {
+        reason: 'initialization_error',
+        error: String(error),
       });
     }
-  });
+  };
+
+  const retryInit = (retries = 4, delay = 2000) => {
+    chrome.runtime.sendMessage({ type: 'getSelectedWallet' }, (wallet) => {
+      if (wallet) {
+        initObserver(wallet);
+      } else if (retries > 0) {
+        setTimeout(() => retryInit(retries - 1, delay * 2), delay);
+      } else {
+        postHogClient?.capture('observer_init_failed', {
+          reason: 'no_wallet_after_retries',
+        });
+      }
+    });
+  };
+
+  retryInit();
 }
 
-initTwitterObserver();
+// Start observing as soon as possible
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initObservers);
+} else {
+  initObservers();
+}
