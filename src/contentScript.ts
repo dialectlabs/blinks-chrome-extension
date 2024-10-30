@@ -6,6 +6,7 @@ import {
   ActionContext,
   BlockchainIds,
   createSignMessageText,
+  setClientKey,
   SignMessageData,
 } from '@dialectlabs/blinks';
 import postHogClient from './analytics';
@@ -138,7 +139,7 @@ export class ActionConfigWithAnalytics implements ActionAdapter {
   }
 }
 
-const adapter = (wallet: string) =>
+const createAdapter = (wallet: string) =>
   new ActionConfigWithAnalytics(
     new ActionConfig(import.meta.env.VITE_RPC_URL, {
       signTransaction: (tx: string) =>
@@ -188,10 +189,12 @@ const adapter = (wallet: string) =>
   );
 
 function initTwitterObserver() {
+  setClientKey(import.meta.env.VITE_PUBLIC_BLINK_CLIENT_KEY);
   chrome.runtime.sendMessage({ type: 'getSelectedWallet' }, (wallet) => {
     if (wallet) {
       postHogClient?.capture('twitter_observer_init_success', { wallet });
-      setupTwitterObserver(adapter(wallet), {
+      const adapter = createAdapter(wallet);
+      setupTwitterObserver(adapter, {
         onActionMount: async (action, originalUrl, type) => {
           postHogClient?.capture('action_mount', {
             actionHost: new URL(action.url).host,
@@ -199,7 +202,7 @@ function initTwitterObserver() {
             originalUrl,
             securityState: type,
             isChained: action.isChained,
-            isSupported: await action.isSupported(),
+            isSupported: await action.isSupported(adapter),
             isLiveData: action.liveData_experimental?.enabled ?? false,
             wallet,
             client: 'extension',
