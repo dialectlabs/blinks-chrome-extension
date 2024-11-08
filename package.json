@@ -1,7 +1,7 @@
 {
   "name": "blink-twitter-inject",
   "displayName": "Dialect Blinks",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "author": "dialect",
   "description": "Enable Solana Blinks on Twitter, with wallet support for Phantom, Backpack and Solflare.",
   "type": "module",
@@ -23,25 +23,25 @@
     "zip": "npm run build && node src/zip.js"
   },
   "dependencies": {
-    "@dialectlabs/blinks": "^0.14.1",
-    "@solana/web3.js": "^1.95.3",
+    "@dialectlabs/blinks": "^0.15.1",
+    "@solana/web3.js": "^1.95.4",
     "bs58": "^6.0.0",
     "buffer": "^6.0.3",
-    "posthog-js": "^1.164.2",
+    "posthog-js": "^1.181.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "2.0.0-beta.26",
-    "@types/chrome": "^0.0.271",
-    "@types/react": "^18.3.8",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@types/chrome": "^0.0.280",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",
-    "tailwindcss": "^3.4.13",
-    "typescript": "^5.6.2",
-    "vite": "^5.4.7"
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
   }
 }
